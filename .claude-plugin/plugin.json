@@ -1,0 +1,14 @@
+{
+  "name": "exploratory-testing",
+  "description": "Drive structured, charter-based exploratory testing sessions in Claude Code — plan charters, run timeboxed sessions, and capture findings.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Jeff Morgan",
+    "email": "cheezy@letstango.ca",
+    "url": "https://github.com/cheezy"
+  },
+  "homepage": "https://github.com/cheezy/exploratory-testing",
+  "repository": "https://github.com/cheezy/exploratory-testing",
+  "license": "MIT",
+  "keywords": ["exploratory-testing", "testing", "qa", "claude-code", "ai-agents"]
+}
