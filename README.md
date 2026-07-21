@@ -1,4 +1,4 @@
-# exploratory-testing
+# stride-exploratory-testing
 
 **Drive structured, charter-based exploratory testing sessions in Claude Code.**
 
@@ -16,7 +16,7 @@ and capture findings, questions, and bugs as you go.
 
 ```
 /plugin marketplace add cheezy/stride-marketplace
-/plugin install exploratory-testing@stride-marketplace
+/plugin install stride-exploratory-testing@stride-marketplace
 ```
 
 ## Repository layout

@@ -1,10 +1,10 @@
 ---
-name: exploratory-testing
-description: Use when you want to test software the way a skilled human tester does — discovering risks, questions, and bugs that scripted or automated checks miss. This is the front door to the exploratory-testing plugin: it teaches the mental model (Tested = Checked + Explored), frames a time-boxed session, and routes each request to the right sub-skill (chartering, heuristics, oracles, session) or slash command (/charter, /nightmare-headline, /explore, /recon, /debrief). Invoke it when the user asks to "explore", "poke at", "do exploratory/manual testing on", "find bugs in", "charter a session for", or otherwise investigate a feature rather than confirm a known expectation.
+name: stride-exploratory-testing
+description: Use when you want to test software the way a skilled human tester does — discovering risks, questions, and bugs that scripted or automated checks miss. This is the front door to the stride-exploratory-testing plugin: it teaches the mental model (Tested = Checked + Explored), frames a time-boxed session, and routes each request to the right sub-skill (chartering, heuristics, oracles, session) or slash command (/charter, /nightmare-headline, /explore, /recon, /debrief). Invoke it when the user asks to "explore", "poke at", "do exploratory/manual testing on", "find bugs in", "charter a session for", or otherwise investigate a feature rather than confirm a known expectation.
 skills_version: "1.0"
 ---
 
-# exploratory-testing
+# stride-exploratory-testing
 
 This is the orchestrator skill — the plugin's front door. It teaches the exploratory-testing (ET) mental model and **routes** each request to the sub-skill or command that does the deep work. Keep it thin: the doctrine lives here so every session is framed the same way; the reusable depth (cheat sheets, oracle catalogs, session lifecycle) lives in the sub-skills this table points to.
 
