@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Full `README.md`: the "Tested = Checked + Explored" model, a safety callout, Stride-marketplace install, prerequisites, the five engines, an enumeration of all five skills / five commands / two agents, an end-to-end quick-start, and a Sources & attribution section (Kaner, Hendrickson's *Explore It!*, SBTM by Jonathan & James Bach, PROOF by Jonathan Bach, Whittaker's Tours, Bach's HTSM).
 - `HEURISTICS.md` — a one-page pointer into the `heuristics` skill (does not duplicate its catalog).
 - `fixtures/` worked examples of the full flow against a synthetic target: `example-charters.md` (a ranked charter set with a nightmare-headline derivation and a check-vs-charter reframe), `example-session-sheet.md` (a complete SBTM session sheet with Task Breakdown Metrics), and `example-debrief.md` (both the Explored/Found/Unknown and PROOF templates).
+- `lib/` smoke-test harness (pure shell, no network, no jq): `test-structure.sh` (manifest, skills, commands, agents, fixtures, and root docs present), `test-frontmatter.sh` (required YAML frontmatter keys on every skill/command/agent), and `test-all.sh` (a single runner that gates a release — exits non-zero if any check fails).
 
 ## [0.1.0] - 2026-07-20
 
