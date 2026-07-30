@@ -49,7 +49,7 @@ where its depth lives:
 | Engine | What it does | Home |
 |---|---|---|
 | **Charters** | Give a session its mission: what to explore, with what resources, to discover what information. | `chartering`, `/charter`, `/nightmare-headline` |
-| **Heuristics** | Idea generators — cheat sheets, Tours, and SFDPOT — for when you're stuck. | `heuristics` |
+| **Heuristics** | Idea generators — cheat sheets, Tours, and SFDIPOT — for when you're stuck. | `heuristics` |
 | **Variables** | The factors you can deliberately vary (data, state, sequence, environment). | `heuristics` (variable catalog) |
 | **Oracles** | How you decide something is actually *wrong*. | `oracles` |
 | **Observation** | Noticing what the system actually did — not what you expected. | `session`, `explorer` |
@@ -65,7 +65,7 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
   Explored" doctrine.
 - **`chartering`** — how to frame a mission and write a well-formed charter
   (`Explore <target> with <resources> to discover <information>`), rank candidates
-  with SFDPOT and the Nightmare Headline Game, and reframe a "charter" that's really
+  with SFDIPOT and the Nightmare Headline Game, and reframe a "charter" that's really
   a test case.
 - **`heuristics`** — the plugin's single source of truth for concrete test-idea
   lenses: general and web cheat sheets, a variable-spotting catalog, and Whittaker's
@@ -93,7 +93,7 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 **2 subagents** (dispatched by the commands, not invoked directly):
 
 - **`charter-generator`** — turns a target (plus optional risk context) into a ranked
-  list of charters via an SFDPOT sweep, charter-source mining, and the Nightmare
+  list of charters via an SFDIPOT sweep, charter-source mining, and the Nightmare
   Headline Game. Read-only; generates only, never executes.
 - **`explorer`** — runs a single time-boxed session against ONE charter: designs
   probes with `heuristics`, judges results with `oracles`, records an SBTM session
@@ -173,7 +173,7 @@ the primary sources:
   Jonathan Bach.
 - **Tours** (Business / Historical / Tourist / Entertainment / Hotel / Seedy
   districts) — James Whittaker, *Exploratory Software Testing*.
-- **The Heuristic Test Strategy Model (HTSM)** — James Bach — including the SFDPOT
+- **The Heuristic Test Strategy Model (HTSM)** — James Bach — including the SFDIPOT
   coverage lens and the quality-criteria checklist the `oracles` skill uses.
 
 ## Changelog

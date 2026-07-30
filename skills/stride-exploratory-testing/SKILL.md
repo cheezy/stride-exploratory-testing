@@ -36,7 +36,7 @@ Every exploratory session runs on five engines. Each sub-skill deepens one or mo
 | **Observation** | Noticing what the system actually did — not what you expected. Fed by oracles. | `oracles` skill |
 | **Variables** | The factors you can deliberately vary — data, state, sequence, timing, environment, configuration. | `heuristics` skill (variable catalog) |
 | **Oracles** | How you decide something is *wrong* — consistency heuristics, references, claims, user expectations. | `oracles` skill |
-| **Heuristics** | Idea generators that get you unstuck — cheat sheets, Tours, SFDPOT, and other lenses. | `heuristics` skill |
+| **Heuristics** | Idea generators that get you unstuck — cheat sheets, Tours, SFDIPOT, and other lenses. | `heuristics` skill |
 
 ## The session lifecycle (time-boxed)
 
@@ -74,7 +74,7 @@ Match the user's request to the right destination. The orchestrator frames and r
 | Frame a mission / decide *what* to test / write a charter | **`chartering`** skill |
 | Generate a risk-driven charter from "what's the worst that could happen" | **`/nightmare-headline`** command |
 | Create one or more charters interactively | **`/charter`** command |
-| Get unstuck / generate test ideas / apply a cheat sheet, Tour, or SFDPOT | **`heuristics`** skill |
+| Get unstuck / generate test ideas / apply a cheat sheet, Tour, or SFDIPOT | **`heuristics`** skill |
 | Know the factors to vary (data, state, sequence, environment) | **`heuristics`** skill (variable catalog) |
 | Decide "is this actually a bug?" / apply consistency oracles | **`oracles`** skill |
 | Run a full time-boxed session with notes and a debrief | **`session`** skill |
@@ -92,7 +92,7 @@ The richer models the sub-skills provide are **lenses, not laws** — reach for 
 
 - **SBTM** (Session-Based Test Management) — the charter → session → debrief management frame used above.
 - **Tours** — themed walkthroughs (the money tour, the landmark tour, the back-alley tour…) that bias exploration toward a particular kind of risk. Cataloged in `heuristics`.
-- **SFDPOT** (Structure, Function, Data, Platform, Operations, Time) — a coverage heuristic for making sure you looked at the whole product. Cataloged in `heuristics`.
+- **SFDIPOT** (Structure, Function, Data, Interfaces, Platform, Operations, Time) — a coverage heuristic for making sure you looked at the whole product. Cataloged in `heuristics`.
 
 Use them as idea generators feeding the design/execute/learn/steer loop — never as a script to march through.
 
