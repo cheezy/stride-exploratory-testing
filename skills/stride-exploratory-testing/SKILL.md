@@ -40,7 +40,7 @@ Every exploratory session runs on five engines. Each sub-skill deepens one or mo
 
 ## The session lifecycle (time-boxed)
 
-Exploration is managed as **time-boxed sessions** (Session-Based Test Management, ~60–120 min of uninterrupted, chartered, reviewable work). One session runs:
+Exploration is managed as **time-boxed sessions** (Session-Based Test Management, ~60–120 min of uninterrupted, chartered, reviewable work — that is the **human** box; an agent-run session is bounded by a probe budget instead, see the `session` skill). One session runs:
 
 1. **Charter** — state the mission before touching the system.
 2. **Recon** — a quick pass to learn the landscape and refine the charter.

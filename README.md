@@ -95,7 +95,7 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 - **`charter-generator`** — turns a target (plus optional risk context) into a ranked
   list of charters via an SFDIPOT sweep, charter-source mining, and the Nightmare
   Headline Game. Read-only; generates only, never executes.
-- **`explorer`** — runs a single time-boxed session against ONE charter: designs
+- **`explorer`** — runs a single budgeted session against ONE charter: designs
   probes with `heuristics`, judges results with `oracles`, records an SBTM session
   sheet, and returns structured findings — all under the absolute safety boundary.
 
@@ -123,11 +123,16 @@ A first session, end to end:
    few). Stuck on *what could go wrong*? Run `/nightmare-headline the CSV import`
    first and let the worst-case headlines drive the charters.
 
-2. **Explore.** Hand a charter to a full, time-boxed session:
+2. **Explore.** Hand a charter to a full session:
 
    ```
    /explore the CSV receipt import --timebox 90
    ```
+
+   `--timebox` is **your** clock: it decides how many charters get funded (one
+   session ≈ 90 minutes). Each explorer session itself is bounded by an
+   agent-native **probe budget** — 12 probes by default, `--probes` to change —
+   because an agent has no honest way to measure minutes.
 
    The `explorer` agent probes the feature using the `heuristics` lenses, judges
    each result with the `oracles`, and keeps a running SBTM session sheet — staying
