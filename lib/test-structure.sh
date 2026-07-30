@@ -2,7 +2,7 @@
 # Structure smoke test for the stride-exploratory-testing plugin.
 #
 # Asserts the plugin ships every file a Claude Code plugin and this
-# plugin's docs require: a valid manifest, all five skills, all five
+# plugin's docs require: a valid manifest, all six skills, all five
 # commands, both agents, the three README-referenced fixtures, and the
 # root docs. Pure shell + python3 (for JSON) — no network, no jq.
 #
@@ -48,7 +48,7 @@ fi
 
 # --- Skills ----------------------------------------------------------------
 
-for skill in stride-exploratory-testing chartering heuristics oracles session; do
+for skill in stride-exploratory-testing chartering heuristics oracles session bug-advocacy; do
   if [ -f "${PLUGIN_ROOT}/skills/${skill}/SKILL.md" ]; then
     ok "skills/${skill}/SKILL.md exists"
   else
@@ -58,10 +58,10 @@ done
 
 # Count only real SKILL.md files (the .gitkeep placeholder is ignored).
 SKILL_COUNT=$(find "${PLUGIN_ROOT}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')
-if [ "$SKILL_COUNT" -eq 5 ]; then
-  ok "exactly 5 SKILL.md files present (.gitkeep ignored)"
+if [ "$SKILL_COUNT" -eq 6 ]; then
+  ok "exactly 6 SKILL.md files present (.gitkeep ignored)"
 else
-  nope "expected 5 SKILL.md files, found ${SKILL_COUNT}" ""
+  nope "expected 6 SKILL.md files, found ${SKILL_COUNT}" ""
 fi
 
 # --- Commands --------------------------------------------------------------

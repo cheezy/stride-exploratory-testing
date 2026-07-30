@@ -58,7 +58,7 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 
 ## What's in this plugin
 
-**5 skills** (the reusable knowledge the commands and agents draw on):
+**6 skills** (the reusable knowledge the commands and agents draw on):
 
 - **`stride-exploratory-testing`** — the orchestrator. Routes any exploratory-testing
   request to the right skill, command, or agent, and holds the "Tested = Checked +
@@ -73,6 +73,10 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 - **`oracles`** — how to decide whether an observed result is a defect: Never/Always
   invariants, consistency oracles (history, comparable products, standards, claims,
   user expectations, purpose), and the HTSM quality-criteria checklist.
+- **`bug-advocacy`** — Kaner's RIMGEA discipline for the work between "an oracle
+  says this is wrong" and a report someone can act on: Replicate, Isolate,
+  Maximize, Generalize, Externalize, And say it clearly — plus the severity rubric
+  and the dispassionate-tone rule.
 - **`session`** — the Session-Based Test Management (SBTM) lifecycle: the session
   sheet, Task Breakdown Metrics, and the two debrief templates.
 
@@ -169,6 +173,9 @@ the primary sources:
 
 - **Exploratory testing as a discipline** — Cem Kaner, who coined the term and
   framed it as *simultaneous* test design, execution, and learning.
+- **Bug Advocacy (RIMGEA)** — Cem Kaner — Replicate, Isolate, Maximize,
+  Generalize, Externalize, And say it clearly: the follow-through that turns a
+  found bug into a fixed one, and the doctrine the `bug-advocacy` skill encodes.
 - **Charter-based, practical exploratory testing** — Elisabeth Hendrickson,
   *Explore It!* — the source of the `Explore <target> with <resources> to discover
   <information>` charter template this plugin builds on.

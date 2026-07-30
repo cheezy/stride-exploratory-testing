@@ -33,6 +33,12 @@ Invoke the `session` skill so the debrief templates, the off-charter parking-lot
 Skill(skill: "session", args: "target=<TARGET>; mode=explore")
 ```
 
+Invoke the `bug-advocacy` skill too, so the severity rubric is loaded from its source rather than assumed when you rank the aggregated bug list in Step 8:
+
+```
+Skill(skill: "bug-advocacy", args: "mode=aggregate")
+```
+
 The `session` skill is written for a *single* session. Cross-session aggregation into one debrief is **this command's own job** (Step 8) — the skill supplies the two debrief templates (Explored/Found/Unknown and PROOF); you apply them across all the sessions this run produces.
 
 ### Step 3: Gather the environment context and the safety answer (one AskUserQuestion round)
@@ -92,7 +98,7 @@ Dispatch **one charter per explorer call** — never batch charters into a singl
 This is the command's signature work — apply **both** `session`-skill debrief templates across all the sessions:
 
 - **Explored / Found / Unknown (roll-up):** union each session's `debrief.explored` into one coverage narrative (which charters ran, which areas/heuristics, and which charters were deferred or blocked — the honest edge of the map); merge every `found` most-important-first; union every `unknown` plus the residual risk of each deferred/blocked charter.
-- **Severity-ranked bug list:** concatenate every session's `bugs`, dedupe obvious cross-session repeats, and rank the combined list by `severity`. This is the actionable core of the report.
+- **Severity-ranked bug list:** concatenate every session's `bugs`, dedupe obvious cross-session repeats, and rank the combined list by `severity` — the `bug-advocacy` rubric's levels, in the order **Critical > High > Moderate > Minor**. **Carry each bug's RIMGEA fields through — do not flatten them away.** `minimal_repro`, `worst_observed`, `generalization`, and `stakeholder_impact` are what make a report actionable rather than merely alarming: they are the difference between a developer reproducing the bug from your entry and re-deriving it themselves. When two sessions found the same bug, merge them by keeping the *shortest* `minimal_repro`, the *worst demonstrated* `worst_observed`, and the *broadest* `generalization` — a merge that discards the stronger evidence understates the bug. An honest "could not establish" value is carried through as-is, never silently dropped or filled in during aggregation.
 - **Merged off-charter parking lot → candidate follow-up charters:** union every session's `off_charter` items plus the charters deferred in Step 7 into one backlog, framed as candidate next charters to feed back into `/charter` or `/nightmare-headline`.
 - **Aggregate PROOF review:** synthesize one Past / Results / Obstacles / Outlook / Feelings across the whole run — Past = what the run did; Results = coverage reached plus combined bug/question counts; Obstacles = blocked or unusable sessions and missing tools; Outlook = the follow-up parking lot; Feelings = the cross-session gut read (unease clustering on one charter is a signal).
 
