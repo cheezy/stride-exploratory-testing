@@ -4,7 +4,9 @@ All notable changes to the `stride-exploratory-testing` plugin are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2026-07-30
+
+A capability sweep from the plugin's own 2026-07 improvement research: two new commands, a sixth skill, session artifacts that survive the conversation, and an explorer contract that no longer asks the agent to fabricate.
 
 ### Added
 
