@@ -80,7 +80,7 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 - **`session`** — the Session-Based Test Management (SBTM) lifecycle: the session
   sheet, Task Breakdown Metrics, and the two debrief templates.
 
-**5 slash commands:**
+**6 slash commands:**
 
 - **`/charter`** — turn a target into a ranked list of well-formed charters (via the
   `charter-generator` agent). Generates only; never runs a session.
@@ -90,6 +90,13 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
   charters, dispatch the `explorer` agent per charter under the safety boundary, and
   aggregate everything into one debrief, written to `.exploratory/sessions/` by
   default.
+- **`/pair`** — the inversion of `/explore`: **you** drive the application and Claude
+  rides along — suggesting the next probe and naming the lens it came from, judging
+  what you report against the oracles, working confirmed defects through RIMGEA, and
+  calling out what the session has *not* touched (only happy paths, only one tenant,
+  only ASCII) before you have to ask. It keeps your session sheet and parking lot so
+  you don't context-switch into note-taking, runs inside your wall-clock time box, and
+  hands off to `/debrief`. Claude holds no tool that can reach the app.
 - **`/recon`** — a lightweight reconnaissance pass over an unfamiliar feature to map
   the landscape, surface stakeholder questions, and emit ranked candidate charters.
 - **`/debrief`** — turn raw session notes and findings into a stakeholder-ready
@@ -145,6 +152,13 @@ A first session, end to end:
    first? Use `/recon the receipt import` to map the feature and get candidate
    charters before committing to a full box.
 
+   **Prefer to drive yourself?** Use `/pair the CSV receipt import --timebox 90`
+   instead. You exercise the app and report what you saw; Claude suggests the next
+   probe (naming the lens), judges each result, keeps the session sheet, and tells you
+   what you've been neglecting. Here `--timebox` is a real 90 minutes on *your* clock —
+   the `session` skill's 60–120 minute box binds a paired session exactly as it binds a
+   solo human one.
+
 3. **Debrief.** Close out with a stakeholder-ready report:
 
    ```
@@ -168,20 +182,25 @@ never this plugin's own repo:
   backlog.md                                 # candidate charters + parked off-charter items
   coverage.md                                # which areas have been explored, and when
   sessions/
-    2026-07-30-1942-receipt-import.md        # one file per /explore run: that run's debrief
+    2026-07-30-1942-receipt-import.md        # one per /explore run (its debrief) or /pair session (its sheet)
 ```
 
 - **`/explore` writes its aggregated debrief by default** to
   `.exploratory/sessions/<timestamp>-<target-slug>.md`. Pass `--output <path>` to
-  redirect that one document somewhere else.
+  redirect that one document somewhere else. **`/pair` writes its session sheet to
+  the same directory** and keeps it up to date *during* the session, so a dropped
+  conversation doesn't cost you your notes.
 - **The backlog is append-only.** `/explore` adds the charters it couldn't fund and
   every off-charter item parked mid-session; `/charter`, `/nightmare-headline`, and
-  `/recon` add the charters they generated; `/debrief` adds the parked items and open
-  questions from your notes. Entries are checked off, never deleted.
+  `/recon` add the charters they generated; `/pair` adds the items you parked
+  mid-session and the coverage gaps you declined; `/debrief` adds the parked items and
+  open questions from your notes. Entries are checked off, never deleted.
 - **The coverage outline is a map, not a score.** It records which areas were
   explored, when, what is covered, and — the part that matters — what is still dark.
   There is no coverage percentage in it and there never will be: "explored enough"
-  is a judgment, not a number.
+  is a judgment, not a number. `/pair` deliberately leaves it alone: its output is a
+  session sheet, not a debrief, and the coverage fields are derived from a debrief —
+  run `/debrief` on the sheet and it updates.
 - **`/charter` reads both back** and hands a digest to the `charter-generator` agent,
   so run five proposes different charters than run one instead of re-suggesting
   ground you already covered.

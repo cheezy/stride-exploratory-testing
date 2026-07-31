@@ -2,7 +2,7 @@
 # Structure smoke test for the stride-exploratory-testing plugin.
 #
 # Asserts the plugin ships every file a Claude Code plugin and this
-# plugin's docs require: a valid manifest, all six skills, all five
+# plugin's docs require: a valid manifest, all six skills, all six
 # commands, both agents, the three README-referenced fixtures, and the
 # root docs. Pure shell + python3 (for JSON) — no network, no jq.
 #
@@ -66,7 +66,7 @@ fi
 
 # --- Commands --------------------------------------------------------------
 
-for cmd in charter nightmare-headline explore recon debrief; do
+for cmd in charter nightmare-headline explore pair recon debrief; do
   if [ -f "${PLUGIN_ROOT}/commands/${cmd}.md" ]; then
     ok "commands/${cmd}.md exists"
   else
@@ -76,10 +76,10 @@ done
 
 # Count only *.md command files (the .gitkeep placeholder is ignored).
 CMD_COUNT=$(find "${PLUGIN_ROOT}/commands" -maxdepth 1 -name '*.md' | wc -l | tr -d ' ')
-if [ "$CMD_COUNT" -eq 5 ]; then
-  ok "exactly 5 command files present (.gitkeep ignored)"
+if [ "$CMD_COUNT" -eq 6 ]; then
+  ok "exactly 6 command files present (.gitkeep ignored)"
 else
-  nope "expected 5 command files, found ${CMD_COUNT}" ""
+  nope "expected 6 command files, found ${CMD_COUNT}" ""
 fi
 
 # --- Agents ----------------------------------------------------------------
