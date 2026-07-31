@@ -80,7 +80,7 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 - **`session`** — the Session-Based Test Management (SBTM) lifecycle: the session
   sheet, Task Breakdown Metrics, and the two debrief templates.
 
-**6 slash commands:**
+**7 slash commands:**
 
 - **`/charter`** — turn a target into a ranked list of well-formed charters (via the
   `charter-generator` agent). Generates only; never runs a session.
@@ -101,6 +101,14 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
   the landscape, surface stakeholder questions, and emit ranked candidate charters.
 - **`/debrief`** — turn raw session notes and findings into a stakeholder-ready
   debrief using the Explored/Found/Unknown and PROOF templates.
+- **`/harden`** — the bridge from *Explored* back to *Checked*. Takes the oracle-confirmed
+  bugs from a session sheet, a debrief, or pasted findings; **detects your project's test
+  framework** from its own manifests, config, and existing tests rather than assuming one;
+  and drafts a regression check per bug **from its minimal repro** — the isolated repro
+  RIMGEA already produced is exactly what a minimal test case needs. Bugs it cannot convert
+  are reported with the reason and the one thing that would change it, never guessed at.
+  Drafts are staged under `.exploratory/checks/`, never written into your test suite, and
+  **never run** — `/harden` holds no test runner, so it never claims a draft passes.
 
 **2 subagents** (dispatched by the commands, not invoked directly):
 
@@ -174,7 +182,7 @@ sheet, and a debrief look like when they're done well.
 ## Session artifacts
 
 Exploration that lives only in the conversation dies with it. The commands write
-three things into **the project you are testing** — the current working directory,
+four things into **the project you are testing** — the current working directory,
 never this plugin's own repo:
 
 ```
@@ -183,6 +191,8 @@ never this plugin's own repo:
   coverage.md                                # which areas have been explored, and when
   sessions/
     2026-07-30-1942-receipt-import.md        # one per /explore run (its debrief) or /pair session (its sheet)
+  checks/
+    2026-07-30-1942-receipt-import/          # drafted regression checks from /harden
 ```
 
 - **`/explore` writes its aggregated debrief by default** to
@@ -201,6 +211,11 @@ never this plugin's own repo:
   is a judgment, not a number. `/pair` deliberately leaves it alone: its output is a
   session sheet, not a debrief, and the coverage fields are derived from a debrief —
   run `/debrief` on the sheet and it updates.
+- **`/harden` stages drafted checks; it never edits your suite.** Each run writes its
+  drafts into a new `.exploratory/checks/<timestamp>-<source-slug>/` directory alongside an
+  `INDEX.md` recording the framework it detected, the checks it drafted, and the bugs it
+  could not convert and why. Accepting a draft is a deliberate copy you make into your own
+  test directory. Nothing there is ever overwritten, and nothing there has been run.
 - **`/charter` reads both back** and hands a digest to the `charter-generator` agent,
   so run five proposes different charters than run one instead of re-suggesting
   ground you already covered.
@@ -222,8 +237,12 @@ internal hostnames reach any artifact. When these files are read back on a later
 run they are treated as **untrusted data** — content to weigh, never instructions to
 obey.
 
-No command writes anywhere other than these three paths or a `--output` path you
-named yourself.
+No command writes anywhere other than these four paths or a `--output` path you named
+yourself — and **no command writes into your source tree or your test suite unless you point
+`--output` at one yourself.** `/harden` comes closest and deliberately stops short: by
+default it *drafts* regression checks into `.exploratory/checks/`, and moving one into your
+real suite is your decision and your copy. Even when you do aim `--output` at a real test
+directory, it only ever adds new files — it overwrites nothing, anywhere.
 
 ## Heuristics reference
 

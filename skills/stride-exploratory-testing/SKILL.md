@@ -1,6 +1,6 @@
 ---
 name: stride-exploratory-testing
-description: Use when you want to test software the way a skilled human tester does — discovering risks, questions, and bugs that scripted or automated checks miss. This is the front door to the stride-exploratory-testing plugin: it teaches the mental model (Tested = Checked + Explored), frames a time-boxed session, and routes each request to the right sub-skill (chartering, heuristics, oracles, bug-advocacy, session) or slash command (/charter, /nightmare-headline, /explore, /pair, /recon, /debrief). Invoke it when the user asks to "explore", "poke at", "do exploratory/manual testing on", "find bugs in", "charter a session for", or otherwise investigate a feature rather than confirm a known expectation.
+description: Use when you want to test software the way a skilled human tester does — discovering risks, questions, and bugs that scripted or automated checks miss. This is the front door to the stride-exploratory-testing plugin: it teaches the mental model (Tested = Checked + Explored), frames a time-boxed session, and routes each request to the right sub-skill (chartering, heuristics, oracles, bug-advocacy, session) or slash command (/charter, /nightmare-headline, /explore, /pair, /recon, /debrief, /harden). Invoke it when the user asks to "explore", "poke at", "do exploratory/manual testing on", "find bugs in", "charter a session for", or otherwise investigate a feature rather than confirm a known expectation.
 skills_version: "1.0"
 ---
 
@@ -18,6 +18,8 @@ Exploratory testing is not a fallback for "when there's no time to automate." It
 - **Exploring** is investigation: discovering the expectations you didn't know to write down — the risks, the surprising states, the questions no one asked. Checks tell you the product does what you expected; exploration tells you what you *should have* expected.
 
 A product with a green test suite is *checked*, not *tested*. This plugin supplies the "explored" half.
+
+**And it supplies the bridge back.** The two halves are not two tracks — an exploratory finding that never becomes a check is a bug that was found once and can return unnoticed, and current practice is a *hybrid* of manual, automated, and AI-assisted testing composed together rather than run in parallel. RIMGEA's **Isolate** step already produces exactly what a minimal test case needs: the shortest set of conditions that still triggers the failure. `/harden` walks that back across the line — it takes a session's oracle-confirmed bugs, detects the project's own test framework, and drafts a regression check per bug from its minimal repro. Explored feeds Checked; a bug found once stays found.
 
 Exploration is a **simultaneous** loop, not a phase:
 
@@ -60,7 +62,7 @@ The `session` skill owns this lifecycle end to end; the `/explore` command runs 
 
 ## When NOT to invoke
 
-- The user wants to **write or fix an automated test** (a check) — that's a coding task, not exploration. Use the project's testing skills.
+- The user wants to **write or fix an automated test** (a check) from scratch — that's a coding task, not exploration. Use the project's testing skills. *One exception:* turning a bug **this plugin already found** into a regression check is `/harden`, which drafts from the isolated repro rather than from a blank page.
 - The expectation is fully known and the ask is "confirm X still works" — that's checking; a scripted test is the right tool.
 - The user is mid-implementation and needs the code changed, not investigated.
 - There is no running system (or realistic stand-in) to explore — exploration needs something to observe.
@@ -83,6 +85,7 @@ Match the user's request to the right destination. The orchestrator frames and r
 | Run an exploratory session end-to-end (plan and execute) | **`/explore`** command |
 | Test alongside a human who is driving the app themselves | **`/pair`** command |
 | Close out a session and produce a structured debrief | **`/debrief`** command |
+| Turn a session's findings into regression checks / "make sure this bug can't come back" | **`/harden`** command |
 
 Two subagents support the commands rather than being invoked directly: **`charter-generator`** (turns a target + risk into candidate charters) and **`explorer`** (executes a charter's exploration loop and reports findings). Reach for the commands above; they dispatch these agents for you.
 
