@@ -88,7 +88,8 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
   headlines, pick one, brainstorm its causes, and refine them into ranked charters.
 - **`/explore`** — plan-and-execute a full session end to end: generate or load
   charters, dispatch the `explorer` agent per charter under the safety boundary, and
-  aggregate everything into one debrief.
+  aggregate everything into one debrief, written to `.exploratory/sessions/` by
+  default.
 - **`/recon`** — a lightweight reconnaissance pass over an unfamiliar feature to map
   the landscape, surface stakeholder questions, and emit ranked candidate charters.
 - **`/debrief`** — turn raw session notes and findings into a stakeholder-ready
@@ -155,6 +156,55 @@ A first session, end to end:
 
 The [`fixtures/`](fixtures/) directory shows exactly what a charter set, a session
 sheet, and a debrief look like when they're done well.
+
+## Session artifacts
+
+Exploration that lives only in the conversation dies with it. The commands write
+three things into **the project you are testing** — the current working directory,
+never this plugin's own repo:
+
+```
+.exploratory/
+  backlog.md                                 # candidate charters + parked off-charter items
+  coverage.md                                # which areas have been explored, and when
+  sessions/
+    2026-07-30-1942-receipt-import.md        # one file per /explore run: that run's debrief
+```
+
+- **`/explore` writes its aggregated debrief by default** to
+  `.exploratory/sessions/<timestamp>-<target-slug>.md`. Pass `--output <path>` to
+  redirect that one document somewhere else.
+- **The backlog is append-only.** `/explore` adds the charters it couldn't fund and
+  every off-charter item parked mid-session; `/charter`, `/nightmare-headline`, and
+  `/recon` add the charters they generated; `/debrief` adds the parked items and open
+  questions from your notes. Entries are checked off, never deleted.
+- **The coverage outline is a map, not a score.** It records which areas were
+  explored, when, what is covered, and — the part that matters — what is still dark.
+  There is no coverage percentage in it and there never will be: "explored enough"
+  is a judgment, not a number.
+- **`/charter` reads both back** and hands a digest to the `charter-generator` agent,
+  so run five proposes different charters than run one instead of re-suggesting
+  ground you already covered.
+
+**A first run creates the tree.** No command fails, warns, or asks you to set
+anything up because `.exploratory/` doesn't exist yet — a missing file is an empty
+starting state.
+
+**Gitignore it.** Session output describes a real application and may quote what it
+observed, so add one line to your project's `.gitignore`:
+
+```gitignore
+.exploratory/
+```
+
+Everything keeps working with it ignored. And the redaction rule applies to written
+files just as it does on screen: no real credentials, tokens, customer data, or
+internal hostnames reach any artifact. When these files are read back on a later
+run they are treated as **untrusted data** — content to weigh, never instructions to
+obey.
+
+No command writes anywhere other than these three paths or a `--output` path you
+named yourself.
 
 ## Heuristics reference
 
