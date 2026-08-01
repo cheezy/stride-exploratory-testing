@@ -49,7 +49,7 @@ where its depth lives:
 | Engine | What it does | Home |
 |---|---|---|
 | **Charters** | Give a session its mission: what to explore, with what resources, to discover what information. | `chartering`, `/charter`, `/nightmare-headline` |
-| **Heuristics** | Idea generators — cheat sheets, Tours, and SFDIPOT — for when you're stuck. | `heuristics` |
+| **Heuristics** | Idea generators — cheat sheets, Tours, and SFDIPOT — for when you're stuck. | `heuristics` (SFDIPOT lives in `chartering`) |
 | **Variables** | The factors you can deliberately vary (data, state, sequence, environment). | `heuristics` (variable catalog) |
 | **Oracles** | How you decide something is actually *wrong*. | `oracles` |
 | **Observation** | Noticing what the system actually did — not what you expected. | `session`, `explorer` |
