@@ -4,6 +4,15 @@ All notable changes to the `stride-exploratory-testing` plugin are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-08-21
+
+A routing correction. No skill content, agent contract, or command surface changed — only the pointers that tell an agent where to go.
+
+### Fixed
+
+- **The orchestrator skill sent every SFDIPOT request to `heuristics`, which contains no SFDIPOT content at all** (D211). The coverage lens table has lived in `chartering` since it was written; the orchestrator's three routing sites had never been updated to say so, so an agent asked to "enumerate targets systematically" or to "apply SFDIPOT" was routed to a skill that could not answer, and the cost was a wasted load plus whatever the agent improvised from the acronym. All three sites are repointed: the Engines table's destination cell gains a parenthetical in the same shape the adjacent Variables row already used, the routing table gets its own SFDIPOT row aimed at `chartering` and drops the acronym from the "get unstuck" row, and the Lenses list now says the model is cataloged in `chartering`. Cheat sheets and Tours genuinely do live in `heuristics`, so those rows still point there.
+- **The same mis-route in the README's engines table**, which the fix's own acceptance criteria had assumed was already correct. It was not — the README is the first thing a human reads about where the depth lives, and it was pointing at the wrong skill for one of the five engines.
+
 ## [0.2.0] - 2026-07-30
 
 A capability sweep from the plugin's own 2026-07 improvement research: two new commands, a sixth skill, session artifacts that survive the conversation, and an explorer contract that no longer asks the agent to fabricate.

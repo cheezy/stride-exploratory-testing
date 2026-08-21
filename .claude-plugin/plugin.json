@@ -1,7 +1,7 @@
 {
   "name": "stride-exploratory-testing",
   "description": "Drive structured, charter-based exploratory testing sessions in Claude Code — plan charters, run timeboxed sessions, and capture findings.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "Jeff Morgan",
     "email": "cheezy@letstango.ca",
