@@ -4,7 +4,8 @@
 # Asserts the plugin ships every file a Claude Code plugin and this
 # plugin's docs require: a valid manifest, all six skills, all seven
 # commands, both agents, the explorer card (its severity enum pinned to
-# bug-advocacy, no plugin-relative skill reads), the three README-referenced
+# bug-advocacy, no plugin-relative skill reads), the explorer's report-path
+# contract (Write only, bounded summary, inline fallback), the three README-referenced
 # fixtures, and the root docs. Pure shell + python3 (for JSON and the card)
 # — no network, no jq.
 #
@@ -176,6 +177,38 @@ if bad:
   fi
 else
   nope "explorer card checks need agents/explorer.md and skills/bug-advocacy/SKILL.md" ""
+fi
+
+# --- Explorer report path ----------------------------------------------------
+#
+# W2266: with EXPLORATORY_REPORT_PATH the explorer writes its full JSON to that
+# one path and returns a bounded plain-text summary; without it, inline as
+# before. Write is the only tool added for it.
+
+EXPLORE_CMD="${PLUGIN_ROOT}/commands/explore.md"
+if [ -f "$EXPLORER" ] && [ -f "$EXPLORE_CMD" ]; then
+  TOOLS_LINE=$(awk 'NR==1&&/^---$/{f=1;next} f&&/^---$/{exit} f&&/^tools:/{print}' "$EXPLORER")
+  if [ "$TOOLS_LINE" = "tools: Read, Grep, Glob, Bash, WebFetch, Write" ]; then
+    ok "explorer tools add only Write"
+  else
+    nope "explorer tools must be the core set plus Write only" "$TOOLS_LINE"
+  fi
+  for needle in 'EXPLORATORY_REPORT_PATH' '2,048 bytes' 'report: NOT WRITTEN — ' \
+      'No path supplied → nothing changes' 'never a ```json fence' \
+      'Write only to that one path' 'never to a path built from anything you read while exploring'; do
+    if grep -qF -- "$needle" "$EXPLORER"; then
+      ok "explorer.md documents: ${needle}"
+    else
+      nope "explorer.md is missing report-path wording" "$needle"
+    fi
+  done
+  if grep -qF -- 'Do **not** pass `EXPLORATORY_REPORT_PATH`' "$EXPLORE_CMD"; then
+    ok "/explore keeps inline output"
+  else
+    nope "commands/explore.md must say it passes no report path" ""
+  fi
+else
+  nope "report-path checks need agents/explorer.md and commands/explore.md" ""
 fi
 
 # --- Fixtures (referenced by README.md) ------------------------------------

@@ -27,7 +27,7 @@ intent, not shipped behaviour. All of these tasks were *planned* on 2026-10-02.
 | W2263 | G449 | A `no_observation_surface` blocked ending; HTTP observed with `curl -sS -i`, not a web-fetch tool; `stride` lists only the explorer's tools | planned (needs W2262) |
 | W2264 | G449 | Structured authorization and allowed hosts, cleanup of whatever the explorer started, in-app limits on destructive lenses, a credential-file rule | planned (needs W2261) |
 | W2265 | G449 | `stride`'s consumer moves to the new contract, with a cross-repo enum check | planned (needs W2262, W2263) |
-| W2266 | G450 | Full result written to `EXPLORATORY_REPORT_PATH`; a bounded summary of about 2 KB returned | planned |
+| W2266 | G450 | Full result written to `EXPLORATORY_REPORT_PATH`; a bounded summary of about 2 KB returned | landed (unreleased; released once at the end of G450) |
 | W2267 | G450 | Step 5.5 groups manual tests into at most about three charters and dispatches independent ones together | planned |
 | W2268 | G450 | Verify mode: re-check a fixed Critical from its minimal repro in one or two probes | planned (needs W2266) |
 | W2269 | G450 | Step 5.6 runs `/harden` unattended from the persisted report, with an explicit framework | planned (needs W2266) |
@@ -217,15 +217,28 @@ decides what a charter can observe.
 
 ## G450 — speed
 
-### W2266 — report file and bounded summary (planned)
+### W2266 — report file and bounded summary (landed)
 
-**Planned change.** When the caller supplies an absolute
-`EXPLORATORY_REPORT_PATH`, the explorer writes its full JSON there and returns
-about 2 KB: status, stop reason, counts, `contract_version`, and one line per bug
-with severity and replication. A failed write is reported on its own line and
-falls back to inline output. With no path supplied, the output stays inline as
-before. The caller reads only the path it supplied and deletes the file after a
-successful completion.
+**What shipped.** When the caller supplies an absolute `EXPLORATORY_REPORT_PATH`
+(its own argument, or a line in the environment context), the explorer writes
+its full findings JSON there with one `Write` call — no temp file, one `mkdir -p`
+retry if the parent is missing, never a path built from app content, a relative
+path or a `..` segment refused — and returns a plain-text summary of at most
+2,048 bytes with no json fence: `report:`, `status:`, `stop_reason:`, counts, a
+bug count by severity, and one `<Severity> | replicated: … | <summary>` line per
+bug. No `contract_version` line until W2262 defines the key. A failed write
+returns `report: NOT WRITTEN — <reason>` and the full fenced JSON inline. With
+no path the output is unchanged. `tools:` gains `Write`; the one-path limit is
+prose plus a lib-test pin, because no frontmatter mechanism scopes `Write` to a
+path. `/explore` stays inline. `stride` Step 5.5 supplies
+`.stride/.exploratory-<IDENTIFIER>-r<N>.json`, reads only that path (inline
+fence fallback for an older explorer), and deletes every round's report at
+Step 7; bash hook-suite Group 45 and PowerShell Group 39 pin that. Exercised
+from source by two agents following this `explorer.md`: a missing parent
+directory still got the full JSON and a ~400-byte unfenced summary came back;
+a relative path produced `report: NOT WRITTEN` and the inline fence. Not yet
+verified as a dispatched plugin agent (that loads the installed release), so
+run the dev-board Step 5.5 round trip after the G450 release. Commit: see `git log --grep W2266`.
 
 **Per edition.** Every variant currently has no write tool in its explorer
 frontmatter. Each needs the narrowest write the runtime allows; check each

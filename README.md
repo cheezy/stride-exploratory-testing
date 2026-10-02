@@ -117,7 +117,8 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
   Headline Game. Read-only; generates only, never executes.
 - **`explorer`** — runs a single budgeted session against ONE charter: designs
   probes with `heuristics`, judges results with `oracles`, records an SBTM session
-  sheet, and returns structured findings — all under the absolute safety boundary.
+  sheet, and returns structured findings (or, given `EXPLORATORY_REPORT_PATH`, writes them
+  there and returns a short summary) — all under the absolute safety boundary.
 
 **`fixtures/`** — worked examples of the full flow: an
 [example charter set](fixtures/example-charters.md), an
