@@ -22,12 +22,12 @@ intent, not shipped behaviour. All of these tasks were *planned* on 2026-10-02.
 
 | Task | Goal | Fix | Status |
 |---|---|---|---|
-| W2261 | G449 | An explorer card inlined in the agent, so the severity scale, oracles and stop rules never depend on loading a skill | landed (unreleased; released once at the end of G449) |
+| W2261 | G449 | An explorer card inlined in the agent, so the severity scale, oracles and stop rules never depend on loading a skill | released in v0.3.0 (2026-10-02) |
 | W2262 | G449 | `status` derived from `stop_reason`; bugs get `replicated` and `provisional`; typed arrays, known-issue handling, `contract_version`; an example-output fixture and a contract test | planned (needs W2261) |
 | W2263 | G449 | A `no_observation_surface` blocked ending; HTTP observed with `curl -sS -i`, not a web-fetch tool; `stride` lists only the explorer's tools | planned (needs W2262) |
 | W2264 | G449 | Structured authorization and allowed hosts, cleanup of whatever the explorer started, in-app limits on destructive lenses, a credential-file rule | planned (needs W2261) |
 | W2265 | G449 | `stride`'s consumer moves to the new contract, with a cross-repo enum check | planned (needs W2262, W2263) |
-| W2266 | G450 | Full result written to `EXPLORATORY_REPORT_PATH`; a bounded summary of about 2 KB returned | landed (unreleased; released once at the end of G450) |
+| W2266 | G450 | Full result written to `EXPLORATORY_REPORT_PATH`; a bounded summary of about 2 KB returned | released in v0.3.0 (2026-10-02) |
 | W2267 | G450 | Step 5.5 groups manual tests into at most about three charters and dispatches independent ones together | planned |
 | W2268 | G450 | Verify mode: re-check a fixed Critical from its minimal repro in one or two probes | planned (needs W2266) |
 | W2269 | G450 | Step 5.6 runs `/harden` unattended from the persisted report, with an explicit framework | planned (needs W2266) |
@@ -126,9 +126,10 @@ to `bug-advocacy`'s four-levels table, caps the card at 4,096 bytes, checks the
 Not yet verified live: whether dispatched explorers now emit only the four
 tokens. The task's integration test (one Step 5.5 dispatch) and its manual
 borderline High/Critical charter were deferred, because a dispatched agent loads
-the installed release rather than this source; run them after the G449 release
+the installed release rather than this source; run them once v0.3.0
 is installed, before porting the card on the strength of its measured effect.
-Commit: see `git log --grep W2261`. Release: with the rest of G449.
+Commit: see `git log --grep W2261`. Release: v0.3.0 (2026-10-02), cut before
+G449's remaining tasks landed.
 
 **Per edition.** All four variants carry the same "read the four skills"
 instruction, so all four need the card or a verified path. Keep the tokens
@@ -238,7 +239,7 @@ from source by two agents following this `explorer.md`: a missing parent
 directory still got the full JSON and a ~400-byte unfenced summary came back;
 a relative path produced `report: NOT WRITTEN` and the inline fence. Not yet
 verified as a dispatched plugin agent (that loads the installed release), so
-run the dev-board Step 5.5 round trip after the G450 release. Commit: see `git log --grep W2266`.
+run the dev-board Step 5.5 round trip once v0.3.0 is installed. Commit: see `git log --grep W2266`. Release: v0.3.0 (2026-10-02).
 
 **Per edition.** Every variant currently has no write tool in its explorer
 frontmatter. Each needs the narrowest write the runtime allows; check each
