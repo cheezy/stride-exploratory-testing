@@ -3,8 +3,10 @@
 #
 # Asserts the plugin ships every file a Claude Code plugin and this
 # plugin's docs require: a valid manifest, all six skills, all seven
-# commands, both agents, the three README-referenced fixtures, and the
-# root docs. Pure shell + python3 (for JSON) — no network, no jq.
+# commands, both agents, the explorer card (its severity enum pinned to
+# bug-advocacy, no plugin-relative skill reads), the three README-referenced
+# fixtures, and the root docs. Pure shell + python3 (for JSON and the card)
+# — no network, no jq.
 #
 # Exit code: 0 if every check passes; 1 if any check fails.
 
@@ -98,6 +100,82 @@ if [ "$AGENT_COUNT" -eq 2 ]; then
   ok "exactly 2 agent files present (.gitkeep ignored)"
 else
   nope "expected 2 agent files, found ${AGENT_COUNT}" ""
+fi
+
+# --- Explorer card -----------------------------------------------------------
+#
+# The explorer has no Skill tool and runs in the project directory, so every
+# rule it applies must be inline. Pin the card's severity enum to the
+# bug-advocacy rubric, and refuse any skill read by a plugin-relative path.
+
+EXPLORER="${PLUGIN_ROOT}/agents/explorer.md"
+ADVOCACY="${PLUGIN_ROOT}/skills/bug-advocacy/SKILL.md"
+
+if [ -f "$EXPLORER" ] && [ -f "$ADVOCACY" ]; then
+  START_COUNT=$(grep -c '<!-- explorer-card:start -->' "$EXPLORER")
+  END_COUNT=$(grep -c '<!-- explorer-card:end -->' "$EXPLORER")
+  if [ "$START_COUNT" -eq 1 ] && [ "$END_COUNT" -eq 1 ]; then
+    ok "agents/explorer.md has exactly one explorer card"
+  else
+    nope "agents/explorer.md needs exactly one explorer card" "start markers: ${START_COUNT}, end markers: ${END_COUNT}"
+  fi
+
+  CARD_BYTES=$(awk '/<!-- explorer-card:start -->/{f=1} f{print} /<!-- explorer-card:end -->/{f=0}' "$EXPLORER" | wc -c | tr -d ' ')
+  if [ "$CARD_BYTES" -gt 0 ] && [ "$CARD_BYTES" -le 4096 ]; then
+    ok "explorer card is ${CARD_BYTES} bytes (limit 4096)"
+  else
+    nope "explorer card must be 1-4096 bytes" "measured ${CARD_BYTES} bytes"
+  fi
+
+  if ENUM_OUT=$(python3 -c '
+import re, sys
+explorer = open(sys.argv[1]).read()
+skill = open(sys.argv[2]).read()
+section = skill.split("### The four levels", 1)[1].split("### The impact ladder", 1)[0]
+table = re.findall(r"^\| \*\*([A-Za-z]+)\*\* \|", section, re.M)
+rank = re.search(r"Rank order is \*\*([A-Za-z >]+)\*\*", skill).group(1).split(" > ")
+card = re.search(r"<!-- explorer-card:start -->(.*?)<!-- explorer-card:end -->", explorer, re.S).group(1)
+enum = re.findall(r"`([A-Za-z]+)`", re.search(r"^\*\*Severity: write exactly one of (.*?)\.\*\*", card, re.M).group(1))
+card_rank = re.search(r"Rank ([A-Za-z >]+)\.", card).group(1).split(" > ")
+ladder = re.findall(r"^- \*\*([A-Za-z]+)\*\*:", card, re.M)
+lists = {"bug-advocacy table": table, "bug-advocacy rank": rank, "card enum": enum, "card rank": card_rank, "card ladder": ladder}
+if len(table) == 4 and all(v == table for v in lists.values()):
+    sys.exit(0)
+print("; ".join("%s=%s" % (k, v) for k, v in lists.items()))
+sys.exit(1)
+' "$EXPLORER" "$ADVOCACY" 2>&1); then
+    ok "explorer card severity enum matches bug-advocacy's four levels and rank order"
+  else
+    nope "explorer card severity enum drifted from bug-advocacy" "$ENUM_OUT"
+  fi
+
+  if REL_OUT=$(python3 -c '
+import re, sys
+text = open(sys.argv[1]).read()
+bad = [m.group(0) for m in re.finditer(r"(\S*)skills/[a-z-]+/SKILL\.md", text)
+       if not m.group(1).lstrip("`(").endswith("${CLAUDE_PLUGIN_ROOT}/")]
+if bad:
+    print(", ".join(bad))
+    sys.exit(1)
+' "$EXPLORER" 2>&1); then
+    ok "agents/explorer.md reads no skill by a plugin-relative path"
+  else
+    nope "agents/explorer.md names a skill by a plugin-relative path" "$REL_OUT"
+  fi
+
+  MISSING_STOPS=""
+  for reason in charter_quiet probe_budget_exhausted tool_call_ceiling risk_acceptable blocked; do
+    if ! awk '/<!-- explorer-card:start -->/{f=1} f{print} /<!-- explorer-card:end -->/{f=0}' "$EXPLORER" | grep -q "\`${reason}\`"; then
+      MISSING_STOPS="${MISSING_STOPS} ${reason}"
+    fi
+  done
+  if [ -z "$MISSING_STOPS" ]; then
+    ok "explorer card names every stop_reason value"
+  else
+    nope "explorer card is missing stop_reason value(s):${MISSING_STOPS}" ""
+  fi
+else
+  nope "explorer card checks need agents/explorer.md and skills/bug-advocacy/SKILL.md" ""
 fi
 
 # --- Fixtures (referenced by README.md) ------------------------------------

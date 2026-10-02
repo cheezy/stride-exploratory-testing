@@ -22,7 +22,7 @@ intent, not shipped behaviour. All of these tasks were *planned* on 2026-10-02.
 
 | Task | Goal | Fix | Status |
 |---|---|---|---|
-| W2261 | G449 | An explorer card inlined in the agent, so the severity scale, oracles and stop rules never depend on loading a skill | planned |
+| W2261 | G449 | An explorer card inlined in the agent, so the severity scale, oracles and stop rules never depend on loading a skill | landed (unreleased; released once at the end of G449) |
 | W2262 | G449 | `status` derived from `stop_reason`; bugs get `replicated` and `provisional`; typed arrays, known-issue handling, `contract_version`; an example-output fixture and a contract test | planned (needs W2261) |
 | W2263 | G449 | A `no_observation_surface` blocked ending; HTTP observed with `curl -sS -i`, not a web-fetch tool; `stride` lists only the explorer's tools | planned (needs W2262) |
 | W2264 | G449 | Structured authorization and allowed hosts, cleanup of whatever the explorer started, in-app limits on destructive lenses, a credential-file rule | planned (needs W2261) |
@@ -81,8 +81,11 @@ Every edition's explorer tells the agent to read
 the plugin (Claude Code `agents/explorer.md:13-14`; gemini and opencode
 `:20-21`; copilot and codex `:12-13`). In the Claude Code edition that path does
 not resolve from the project directory where the agent runs, which is the cause
-of the severity drift above. **Whether it resolves in each other runtime is
-unverified.** Check it per edition before porting W2261. If it does resolve, the
+of the severity drift above. For Claude Code, the documented way in is a literal
+`${CLAUDE_PLUGIN_ROOT}` written in the agent's Markdown body, which Claude Code
+substitutes when it loads the agent; the variable is not set in the agent's Bash
+environment (see the W2261 section below). **Whether the relative path resolves
+in each other runtime is unverified.** Check it per edition before porting W2261. If it does resolve, the
 card is still worth porting for its size, but it is no longer an accuracy fix
 there.
 
@@ -99,19 +102,33 @@ only the single workflow skill mentions the plugin. Find each port's text with
 
 ## G449 — accuracy
 
-### W2261 — an inline explorer card (planned)
+### W2261 — an inline explorer card (landed)
 
-**Planned change.** Add a card of at most about 4 KB to the explorer agent:
+**What shipped.** `agents/explorer.md` carries an explorer card of 3,750 bytes
+between `<!-- explorer-card:start -->` and `<!-- explorer-card:end -->`, placed
+right after the safety boundary, which is byte-identical. The card holds:
 
-- the exact severity enum Critical | High | Moderate | Minor, with the ladder
-  clauses and the modifier rule;
-- one-line RIMGEA reminders;
-- the three oracle classes;
-- the stop rules.
+- the exact severity enum Critical | High | Moderate | Minor, as a bare
+  capitalised word that is never omitted, with every impact-ladder clause
+  condensed per level, the tie rule, the three modifiers and their combination
+  rule, and the unknown-impact rule;
+- RIMGEA, mapped onto the `bugs[]` fields it fills;
+- the three oracle verdicts and the three kinds of oracle;
+- the stop rules, mapped onto `stop_reason`.
 
-Reading the four skills becomes optional depth rather than a dependency. Before
-writing the card, verify how a plugin agent can reach plugin files, and record
-the answer.
+The explore loop and the `bugs[]` rows point at the card. The four skills are
+optional depth, referenced as `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md`.
+Claude Code's plugins reference says `${...}` resolves anywhere in an agent's
+Markdown body and is not exported to Bash in a subagent; that is documented,
+not live-tested. `lib/test-structure.sh` pins the card's enum, rank and ladder
+to `bug-advocacy`'s four-levels table, caps the card at 4,096 bytes, checks the
+`stop_reason` values, and refuses any unprefixed `skills/<name>/SKILL.md`.
+Not yet verified live: whether dispatched explorers now emit only the four
+tokens. The task's integration test (one Step 5.5 dispatch) and its manual
+borderline High/Critical charter were deferred, because a dispatched agent loads
+the installed release rather than this source; run them after the G449 release
+is installed, before porting the card on the strength of its measured effect.
+Commit: see `git log --grep W2261`. Release: with the rest of G449.
 
 **Per edition.** All four variants carry the same "read the four skills"
 instruction, so all four need the card or a verified path. Keep the tokens
