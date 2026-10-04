@@ -122,8 +122,11 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 
 **`fixtures/`** — worked examples of the full flow: an
 [example charter set](fixtures/example-charters.md), an
-[example session sheet](fixtures/example-session-sheet.md), and an
-[example debrief](fixtures/example-debrief.md). They double as concrete templates
+[example session sheet](fixtures/example-session-sheet.md), an
+[example debrief](fixtures/example-debrief.md), and an
+[example explorer output](fixtures/example-explorer-output.json) — the explorer's
+findings JSON, which `lib/test-structure.sh` checks against the output contract in
+`agents/explorer.md`. They double as concrete templates
 and as regression anchors for future smoke tests.
 
 See also **[HEURISTICS.md](HEURISTICS.md)** for a one-page pointer to the lenses in
@@ -178,7 +181,7 @@ A first session, end to end:
    the team). "Unknown" is a first-class result — the honest edge of the map.
 
 The [`fixtures/`](fixtures/) directory shows exactly what a charter set, a session
-sheet, and a debrief look like when they're done well.
+sheet, a debrief, and the explorer's findings JSON look like when they're done well.
 
 ## Session artifacts
 
