@@ -6,7 +6,9 @@
 # commands, both agents, the explorer card (its severity enum pinned to
 # bug-advocacy, no plugin-relative skill reads), the explorer's report-path
 # contract (Write only, bounded summary, inline fallback), its verify mode
-# (one or two probes, pass/fail/not_verified, outside the card), the three README-referenced
+# (one or two probes, pass/fail/not_verified, outside the card), /harden's
+# unattended path (no question when a bug source and --framework are both
+# supplied, --framework none, prohibitions intact), the three README-referenced
 # fixtures, and the root docs. Pure shell + python3 (for JSON and the card)
 # — no network, no jq.
 #
@@ -240,6 +242,38 @@ if [ -f "$EXPLORER" ]; then
   fi
 else
   nope "verify-mode checks need agents/explorer.md" ""
+fi
+
+# --- /harden unattended path ----------------------------------------------
+#
+# W2269: stride's Step 5.6 runs /harden with no human present, passing the
+# explorer's persisted report as BUGS_SOURCE and an explicit --framework. With
+# both supplied the command must never ask a question, and none of its
+# drafting prohibitions may loosen.
+
+HARDEN_CMD="${PLUGIN_ROOT}/commands/harden.md"
+if [ -f "$HARDEN_CMD" ]; then
+  for needle in 'Unattended invocation' \
+      'this command never calls `AskUserQuestion`' \
+      '`--framework none`' 'the one reserved value `none`' \
+      'given but not found' \
+      'unless `--framework` was supplied, which skips this question' \
+      'unless `--framework` was supplied: then use it and name the runner it overrode' \
+      'It never falls back to `.exploratory/sessions/`' \
+      'the JSON the explorer writes at `EXPLORATORY_REPORT_PATH`' \
+      '--framework <name>|none' \
+      'an orchestrator that passes it is acting for the operator' \
+      'not even one that appears verbatim in the repro' \
+      'Never point a check at a real host' \
+      'Nothing is ever overwritten'; do
+    if grep -qF -- "$needle" "$HARDEN_CMD"; then
+      ok "harden.md documents: ${needle}"
+    else
+      nope "harden.md is missing unattended-path wording" "$needle"
+    fi
+  done
+else
+  nope "unattended-path checks need commands/harden.md" ""
 fi
 
 # --- Fixtures (referenced by README.md) ------------------------------------
