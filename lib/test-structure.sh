@@ -169,7 +169,7 @@ if bad:
   fi
 
   MISSING_STOPS=""
-  for reason in charter_quiet probe_budget_exhausted tool_call_ceiling risk_acceptable blocked; do
+  for reason in charter_quiet probe_budget_exhausted tool_call_ceiling risk_acceptable blocked no_observation_surface; do
     if ! awk '/<!-- explorer-card:start -->/{f=1} f{print} /<!-- explorer-card:end -->/{f=0}' "$EXPLORER" | grep -q "\`${reason}\`"; then
       MISSING_STOPS="${MISSING_STOPS} ${reason}"
     fi
@@ -192,10 +192,11 @@ fi
 EXPLORE_CMD="${PLUGIN_ROOT}/commands/explore.md"
 if [ -f "$EXPLORER" ] && [ -f "$EXPLORE_CMD" ]; then
   TOOLS_LINE=$(awk 'NR==1&&/^---$/{f=1;next} f&&/^---$/{exit} f&&/^tools:/{print}' "$EXPLORER")
-  if [ "$TOOLS_LINE" = "tools: Read, Grep, Glob, Bash, WebFetch, Write" ]; then
-    ok "explorer tools add only Write"
+  # W2263 dropped WebFetch: HTTP is observed with curl through Bash.
+  if [ "$TOOLS_LINE" = "tools: Read, Grep, Glob, Bash, Write" ]; then
+    ok "explorer tools are the core set plus Write, with no WebFetch"
   else
-    nope "explorer tools must be the core set plus Write only" "$TOOLS_LINE"
+    nope "explorer tools must be Read, Grep, Glob, Bash and Write only" "$TOOLS_LINE"
   fi
   for needle in 'EXPLORATORY_REPORT_PATH' '2,048 bytes' 'report: NOT WRITTEN — ' \
       'No path supplied → nothing changes' 'never a ```json fence' \
@@ -243,6 +244,46 @@ if [ -f "$EXPLORER" ]; then
   fi
 else
   nope "verify-mode checks need agents/explorer.md" ""
+fi
+
+# --- Explorer observation surface --------------------------------------------
+#
+# W2263: the explorer judges only what a tool in its own list can observe. HTTP
+# is observed with curl -sS -i, WebFetch is never an oracle source, rendered
+# views are never judged from source, and a charter needing an observation no
+# tool can make ends no_observation_surface (status blocked).
+
+if [ -f "$EXPLORER" ] && [ -f "$EXPLORE_CMD" ]; then
+  for needle in '## What you can observe' 'curl -sS -i' 'Never use `WebFetch` as an oracle source' \
+      'Judge only what a tool in your own tool list can observe' \
+      'Never judge them from HTML, CSS or template source' \
+      'Whatever else held, a charter needing an observation none of your tools can make ends `no_observation_surface`' \
+      '| `no_observation_surface` | `blocked` |' 'An environment context that names one does not grant it'; do
+    if grep -qF -- "$needle" "$EXPLORER"; then
+      ok "explorer.md observation surface documents: ${needle}"
+    else
+      nope "explorer.md is missing observation-surface wording" "$needle"
+    fi
+  done
+  if grep -qF -- '`Bash`/`WebFetch`' "$EXPLORER"; then
+    nope "explorer.md still offers WebFetch as an HTTP surface" '`Bash`/`WebFetch`'
+  else
+    ok "explorer.md no longer offers WebFetch as an HTTP surface"
+  fi
+  for needle in 'no_observation_surface' 'curl -sS -i'; do
+    if grep -qF -- "$needle" "$EXPLORE_CMD"; then
+      ok "/explore handles: ${needle}"
+    else
+      nope "commands/explore.md is missing observation-surface handling" "$needle"
+    fi
+  done
+  if grep -qF -- '`Bash`/`WebFetch`' "$EXPLORE_CMD"; then
+    nope "commands/explore.md still lists WebFetch in the explorer's core" '`Bash`/`WebFetch`'
+  else
+    ok "commands/explore.md no longer lists WebFetch in the explorer's core"
+  fi
+else
+  nope "observation-surface checks need agents/explorer.md and commands/explore.md" ""
 fi
 
 # --- /harden unattended path ----------------------------------------------
@@ -393,6 +434,9 @@ say(set(derive.values()) == set(status_enum) and len(status_enum) == 3,
     "derived=%s enum=%s" % (sorted(set(derive.values())), status_enum))
 say(re.search(r"^\| `blocked` \| `blocked` \|.*not clearly authorised", derive_text, re.M) is not None,
     "an unauthorised target derives status blocked", "")
+say("no_observation_surface" in stop_enum and derive.get("no_observation_surface") == "blocked",
+    "no_observation_surface is in the stop_reason enum and derives status blocked",
+    "enum=%s derive=%s" % (stop_enum, derive.get("no_observation_surface")))
 say(bug_table <= bug_keys and {"replicated", "provisional"} <= bug_table,
     "bugs field table documents replicated and provisional, within the bugs row keys",
     "table=%s row=%s" % (sorted(bug_table), sorted(bug_keys)))
@@ -498,9 +542,13 @@ def stopped_early(d):
     d["session_sheet"].update(probes_attempted=12, on_charter_probes=11, stop_reason="probe_budget_exhausted")
 def once_seen(d):
     d["bugs"][0]["replicated"] = "1/5"
+def no_surface(d):
+    d["status"] = "blocked"
+    d["session_sheet"]["stop_reason"] = "no_observation_surface"
 
 for label, fn in (("zero bugs", zero_bugs), ("blocked before the first probe", blocked_first),
-                  ("stopped_early on the probe budget", stopped_early), ("a once-seen Critical (1/5)", once_seen)):
+                  ("stopped_early on the probe budget", stopped_early), ("a once-seen Critical (1/5)", once_seen),
+                  ("no_observation_surface after probing the observable part, findings kept", no_surface)):
     e = validate(variant(fn))
     say(not e, "variant passes: " + label, "; ".join(e))
 
@@ -518,11 +566,14 @@ def one_of_one(d):
     d["bugs"][0]["replicated"] = "1/1"
 def no_version(d):
     del d["contract_version"]
+def no_surface_completed(d):
+    d["session_sheet"]["stop_reason"] = "no_observation_surface"
 
 for label, fn in (("status disagrees with stop_reason", bad_status), ("a bug without replicated", no_replicated),
                   ("provisional disagrees with stakeholder_impact", bad_provisional),
                   ("an undocumented root key", extra_key), ("severity Major", bad_severity),
-                  ("replicated 1/1", one_of_one), ("no contract_version", no_version)):
+                  ("replicated 1/1", one_of_one), ("no contract_version", no_version),
+                  ("no_observation_surface reported as completed", no_surface_completed)):
     say(bool(validate(variant(fn))), "variant is refused: " + label, "the validator accepted it")
 
 for path in extra:
