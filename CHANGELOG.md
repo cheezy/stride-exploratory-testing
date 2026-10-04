@@ -4,7 +4,9 @@ All notable changes to the `stride-exploratory-testing` plugin are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 2026-10-04
+
+A checkable explorer contract, a structured safety boundary and lighter sessions. The explorer's output now has a published `stop_reason` → `status` table, `replicated` and `provisional` on every bug, and `contract_version` `"1.0"`. Authorization and allowed hosts are required lines, and the explorer cleans up what it started. HTTP is observed with `curl` and a new `no_observation_surface` ending covers what it cannot see. Verify mode re-checks one fixed bug, `/harden` runs unattended, files are read by range, and the always-loaded text is shorter.
 
 ### Added
 

@@ -109,6 +109,8 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
   are reported with the reason and the one thing that would change it, never guessed at.
   Drafts are staged under `.exploratory/checks/`, never written into your test suite, and
   **never run** — `/harden` holds no test runner, so it never claims a draft passes.
+  Given both a bug source and `--framework <name>` (or `--framework none`), it never stops
+  to ask a question, so an orchestrator can run it unattended.
 
 **2 subagents** (dispatched by the commands, not invoked directly):
 
@@ -118,7 +120,15 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 - **`explorer`** — runs a single budgeted session against ONE charter: designs
   probes with `heuristics`, judges results with `oracles`, records an SBTM session
   sheet, and returns structured findings (or, given `EXPLORATORY_REPORT_PATH`, writes them
-  there and returns a short summary) — all under the absolute safety boundary.
+  there and returns a short summary) — all under the absolute safety boundary. It runs
+  only when the caller passes `AUTHORIZED_NON_PRODUCTION: yes` and an `ALLOWED_HOSTS:`
+  line, and cleans up every process and file it started. It observes HTTP with
+  `curl -sS -i` and judges only what its own tools can see. A charter that needs a
+  rendered view it cannot observe ends `blocked` with `stop_reason`
+  `no_observation_surface`. Its output carries `contract_version`, a `status` derived
+  from `stop_reason`, and `replicated` / `provisional` on every bug. With
+  `EXPLORATORY_MODE=verify` it re-checks one fixed bug from its minimal repro in one or
+  two probes.
 
 **`fixtures/`** — worked examples of the full flow: an
 [example charter set](fixtures/example-charters.md), an

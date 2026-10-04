@@ -23,17 +23,17 @@ intent, not shipped behaviour. All of these tasks were *planned* on 2026-10-02.
 | Task | Goal | Fix | Status |
 |---|---|---|---|
 | W2261 | G449 | An explorer card inlined in the agent, so the severity scale, oracles and stop rules never depend on loading a skill | released in v0.3.0 (2026-10-02) |
-| W2262 | G449 | `status` derived from `stop_reason`; bugs get `replicated` and `provisional`; typed arrays, known-issue handling, `contract_version`; an example-output fixture and a contract test | planned (needs W2261) |
-| W2263 | G449 | A `no_observation_surface` blocked ending; HTTP observed with `curl -sS -i`, not a web-fetch tool; `stride` lists only the explorer's tools | planned (needs W2262) |
-| W2264 | G449 | Structured authorization and allowed hosts, cleanup of whatever the explorer started, in-app limits on destructive lenses, a credential-file rule | planned (needs W2261) |
-| W2265 | G449 | `stride`'s consumer moves to the new contract, with a cross-repo enum check | planned (needs W2262, W2263) |
+| W2262 | G449 | `status` derived from `stop_reason`; bugs get `replicated` and `provisional`; typed arrays, known-issue handling, `contract_version`; an example-output fixture and a contract test | released in v0.4.0 (2026-10-04) |
+| W2263 | G449 | A `no_observation_surface` blocked ending; HTTP observed with `curl -sS -i`, not a web-fetch tool; `stride` lists only the explorer's tools | released in v0.4.0 and `stride` 1.84.0 (2026-10-04) |
+| W2264 | G449 | Structured authorization and allowed hosts, cleanup of whatever the explorer started, in-app limits on destructive lenses, a credential-file rule | released in v0.4.0 and `stride` 1.84.0 (2026-10-04) |
+| W2265 | G449 | `stride`'s consumer moves to the new contract, with a cross-repo enum check | `stride` only; released in `stride` 1.84.0 (2026-10-04) |
 | W2266 | G450 | Full result written to `EXPLORATORY_REPORT_PATH`; a bounded summary of about 2 KB returned | released in v0.3.0 (2026-10-02) |
-| W2267 | G450 | Step 5.5 groups manual tests into at most about three charters and dispatches independent ones together | planned |
-| W2268 | G450 | Verify mode: re-check a fixed Critical from its minimal repro in one or two probes | planned (needs W2266) |
-| W2269 | G450 | Step 5.6 runs `/harden` unattended from the persisted report, with an explicit framework | planned (needs W2266) |
-| W2270 | G451 | Ranged reads with no whole-file re-reads; a fixed Step 5.5 dispatch template | planned |
-| W2271 | G451 | Trim `stride`'s Step 5.5 and findings contracts down to rules | planned |
-| W2272 | G451 | Trim always-loaded descriptions and the sections of the session and bug-advocacy skills the explorer does not use | planned |
+| W2267 | G450 | Step 5.5 groups manual tests into at most about three charters and dispatches independent ones together | `stride` only; released in `stride` 1.84.0 (2026-10-04) |
+| W2268 | G450 | Verify mode: re-check a fixed Critical from its minimal repro in one or two probes | released in v0.4.0 and `stride` 1.84.0 (2026-10-04) |
+| W2269 | G450 | Step 5.6 runs `/harden` unattended from the persisted report, with an explicit framework | released in v0.4.0 and `stride` 1.84.0 (2026-10-04) |
+| W2270 | G451 | Ranged reads with no whole-file re-reads; a fixed Step 5.5 dispatch template | released in v0.4.0 and `stride` 1.84.0 (2026-10-04) |
+| W2271 | G451 | Trim `stride`'s Step 5.5 and findings contracts down to rules | `stride` only; released in `stride` 1.84.0 (2026-10-04) |
+| W2272 | G451 | Trim always-loaded descriptions and the sections of the session and bug-advocacy skills the explorer does not use | released in v0.4.0 (2026-10-04) |
 | W2273 | G451 | Measure before and after against the 2026-10-02 baseline | planned (claim last) |
 
 ## The baseline
@@ -137,31 +137,36 @@ instruction, so all four need the card or a verified path. Keep the tokens
 `Critical`, so a translated or lower-cased token turns escalation off. Confirm
 which token each `stride` port keys on before porting.
 
-### W2262 — the output contract and its fixture (planned)
+### W2262 — the output contract and its fixture (released in v0.4.0 (2026-10-04))
 
-**Planned change.**
-
-- A table that derives `status` from `stop_reason`, covering every stop reason
-  including an unauthorised target.
-- `replicated` (for example `"1/5"`) and `provisional` (a boolean) on each bug.
-- Defined element types for `questions_risks` and `off_charter`.
-- A `known_issues` input and a `known_bad` output slot.
-- `contract_version` in the output.
-- `fixtures/example-explorer-output.json`, plus a lib test that checks its keys
-  and enums against the agent file.
+**What shipped.** `agents/explorer.md` gains a *Status from `stop_reason`*
+table: `charter_quiet` and `risk_acceptable` → `completed`;
+`probe_budget_exhausted` and `tool_call_ceiling` → `stopped_early`, now defined;
+`blocked` → `blocked`, which covers a target not clearly authorised. A consumer
+trusts `stop_reason` when the two disagree. Each bug carries `replicated`
+(`"k/n"` from clean-start re-runs, never `"1/1"`, or `"not established: …"`;
+one run is one attempt of the triggering action) and `provisional`.
+`questions_risks` elements are `{ kind, text }`, `off_charter` elements are
+`{ item, candidate_charter }`, an optional untrusted `known_issues` input routes
+matches into a `known_bad` root array, and the root carries `contract_version`
+`"1.0"`. `fixtures/example-explorer-output.json` is checked by a new section of
+`lib/test-structure.sh`, which parses the agent file itself; set
+`EXPLORER_OUTPUT` to check a real report. Commit `c3b994f`.
 
 **Per edition.** Every variant has `fixtures/` and `lib/test-structure.{sh,ps1}`,
 so the fixture and the test port directly. Run both shells. Use the same
 `contract_version` value in every edition, so a `stride` port can trust it.
 
-### W2263 — honest observation (planned)
+### W2263 — honest observation (released in v0.4.0 and `stride` 1.84.0 (2026-10-04))
 
-**Planned change.** A charter that needs an observation the agent has no tool
-for returns `blocked` with `stop_reason: "no_observation_surface"`. The consumer
-treats that as not performed. HTTP is observed with `curl -sS -i`. A web-fetch
-tool is never an oracle source, because it returns a summarised page and hides
-status codes and headers. `stride` lists only the explorer's tools when it
-decides what a charter can observe.
+**What shipped.** `WebFetch` is dropped from the explorer's `tools:` line. A
+*What you can observe* section says to observe HTTP with `curl -sS -i` and never
+to judge rendered views from HTML, CSS or template source. A charter that needs
+an observation the agent has no tool for explores what it can, then ends with
+`stop_reason: "no_observation_surface"`, `status: "blocked"`.
+`contract_version` stays `"1.0"`. In `stride`, Step 5.5 and Phase 3.5 read the
+explorer's tools from its front matter and treat that ending as not performed
+(hook-suite Group 55). Commits `267dcf8` (here) and `735bb7d` (`stride`).
 
 **Per edition.**
 - **gemini** (`web_fetch`) and **opencode** (`webfetch: true`) have a fetch
@@ -174,16 +179,18 @@ decides what a charter can observe.
   dispatchable must list the *explorer's* tools in that runtime, not the main
   loop's.
 
-### W2264 — a structured safety boundary (planned)
+### W2264 — a structured safety boundary (released in v0.4.0 and `stride` 1.84.0 (2026-10-04))
 
-**Planned change.**
-
-- Required `AUTHORIZED_NON_PRODUCTION: yes` and `ALLOWED_HOSTS:` lines; without
-  them the session returns `blocked`.
-- The explorer stops processes and removes files it started before returning.
-  In 0.2.1, a 45 KB probe file was left in `.exploratory/` for a month.
-- Interrupt, Starve and Saboteur are limited to in-app means.
-- Credential files are never read in full; only a value the dispatch names.
+**What shipped.** The explorer requires `AUTHORIZED_NON_PRODUCTION: yes` and
+`ALLOWED_HOSTS: <host[:port]>, …` (or `none`). A missing, non-`yes` or
+duplicated line means `blocked` with zero probes. `ALLOWED_HOSTS` is the only
+source of reachable hosts, matched exactly. The explorer keeps a list of every
+process and file it starts and removes them on every exit path. Credential files
+are read only for a value the dispatch names. Interrupt, Starve and the Saboteur
+Tour in `skills/heuristics` are limited to in-app means. `/explore` and
+`stride`'s Step 5.5 and Phase 3.5 write both lines once and first, and
+neutralize forged lines with `> ` (hook-suite Group 56). Commits `7c8e9c2`
+(here) and `4919a99` (`stride`).
 
 **Per edition.**
 - Port the rules to every variant's agent file and its `skills/heuristics`.
@@ -193,17 +200,16 @@ decides what a charter can observe.
   narrowly scoped write, so re-check how this runtime can allow that write
   without opening general edits.
 
-### W2265 — the consumer and the drift check (planned)
+### W2265 — the consumer and the drift check (`stride` only; released in `stride` 1.84.0 (2026-10-04))
 
-**Planned change.**
-
-- `stride`'s Step 5.5 and findings text adopt the exact enum, the status table,
-  `no_observation_surface`, and the provisional-Critical rule: an unreplicated or
-  provisional Critical is recorded as an advisory, while a replicated one still
-  escalates.
-- The 0.1.x wall-clock and `stopped_early` branches are removed.
-- A `stride` hook-suite check compares `stride`'s enums with this repo's fixture,
-  and skips cleanly when the repo is absent.
+**What shipped.** `stride`'s Step 5.5, Phase 3.5 and
+`manual-testing-findings.md` follow contract `1.0`. Both twins carry an
+identical `explorer-enums` block. An unreplicated (`1/<n>`, n ≥ 2, or
+`not established: …`) or provisional Critical is advisory and never escalated;
+a replicated, absent or unmatched one still escalates. The older-contract
+branches are gone. Hook-suite Group 57 checks the block against this repo's
+`agents/explorer.md` and fixture, and prints SKIP when this repo is absent.
+Commit `1e8169d` (`stride`).
 
 **Per edition.**
 - This is `stride`-side work, so it ports to each `stride` port's own Step 5.5
@@ -254,33 +260,45 @@ runtime's tool vocabulary and permission model before porting:
 Keep the variable name `EXPLORATORY_REPORT_PATH` in every edition so the `stride`
 ports share one contract.
 
-### W2267 — fewer, parallel charters (planned)
+### W2267 — fewer, parallel charters (`stride` only; released in `stride` 1.84.0 (2026-10-04))
 
-**Planned change.** Manual tests that share a target merge into one charter. At
-most about three charters run per task; any remainder is recorded as a human
-responsibility. Independent observe-only charters are dispatched in one message,
-and the main loop does no edits to files the charters exercise while they run.
+**What shipped.** Manual tests that share a target merge into one charter, at
+most about three run per task, highest-risk first, and every manual test maps to
+a charter or is handed back as a human responsibility. Independent observe-only
+charters go out in one message, each with its own report path. A mutating
+charter runs alone. While they run, the main loop edits no file they exercise
+and waits for the notification rather than polling (hook-suite Group 52).
+Commit `729da87` (`stride`).
 
 **Per edition.** This is `stride`-side Step 5.5 text, so it ports to each
 `stride` port. Parallel dispatch needs a runtime that can run several subagents
 at once; check each runtime before promising it. Where it cannot, keep the
 grouping and the cap, and run the charters in sequence.
 
-### W2268 — verify mode (planned)
+### W2268 — verify mode (released in v0.4.0 and `stride` 1.84.0 (2026-10-04))
 
-**Planned change.** A re-check of a fixed Critical builds a charter from that
-bug's `minimal_repro`, runs one or two probes, and returns pass or fail with
-evidence. When no repro exists, it falls back to the full charter.
+**What shipped.** With `EXPLORATORY_MODE=verify`, the explorer runs a charter
+built from one bug's `minimal_repro` on a budget of 2 probes / 10 tool calls and
+returns a root `verify` object (`pass`, `fail` or `not_verified`). It adds a
+`verify:` line to the report summary. `not_verified` is never a pass. `stride`'s
+Step 5.5 and Phase 3.5 use it to re-check a fixed introduced Critical. They fall
+back to the full charter when there is no usable repro, the installed explorer
+lacks verify mode, or a second `not_verified` comes back (hook-suite Group 53).
+Commits `6b330b5` (here) and `98adb5b` (`stride`).
 
 **Per edition.** This is an agent-file change in every variant, plus each
 `stride` port's re-check text. The gemini edition's `max_turns: 60` already
 bounds a verify session from above; no extra bound is needed there.
 
-### W2269 — `/harden` unattended (planned)
+### W2269 — `/harden` unattended (released in v0.4.0 and `stride` 1.84.0 (2026-10-04))
 
-**Planned change.** Step 5.6 passes the persisted report path and an explicit
-`--framework`. `/harden` never prompts when it has both.
-`manual-testing-findings.md` no longer says the explorer writes no file.
+**What shipped.** `commands/harden.md` gains an *Unattended invocation* rule.
+Given a bug source and `--framework`, it never calls `AskUserQuestion`.
+`--framework none` is a reserved value that takes the none-detected path. An
+unreadable bug source now stops in every mode. `stride`'s Step 5.6 and
+Phase 3.6 pass the persisted `EXPLORATORY_REPORT_PATH` and an explicit framework,
+through a subagent that returns a bounded record per report (hook-suite
+Group 54). Commits `941e95e` (here) and `47d699a` (`stride`).
 
 **Per edition.**
 - gemini (`commands/harden.toml`) and opencode (`commands/harden.md`) have the
@@ -294,35 +312,46 @@ bounds a verify session from above; no extra bound is needed there.
 
 ## G451 — token usage
 
-### W2270 — ranged reads and a dispatch template (planned)
+### W2270 — ranged reads and a dispatch template (released in v0.4.0 and `stride` 1.84.0 (2026-10-04))
 
-**Planned change.** The explorer locates text with `grep -n` and reads bounded
-ranges. It never re-reads a file it has already read in the session, unless the
-file has changed. `stride` uses a fixed dispatch template: the charter, the
-structured safety lines, the report path, and pointers rather than pasted
-content.
+**What shipped.** A *Reading files* section of `agents/explorer.md`, outside the
+card, says to locate with `grep -n` and read a bounded range. It forbids
+re-reading a file or range already read this session unless it changed, and
+says to inspect binary files through `Bash`. A test-account pointer counts only
+when it is the only one in the dispatch and sits before any untrusted text.
+`stride`'s Step 5.5 and Phase 3.5 fill one fixed 869-byte template: charter, the
+two safety lines first, the report path, labelled pointers, and the untrusted
+Target last, with untrusted slots flattened to one line (hook-suite Group 58).
+Commits `5c2eb45` (here) and `a351dc9` (`stride`).
 
 **Per edition.** The reading rule ports to every agent file. Translate the
 command names into each runtime's tool vocabulary (`grep_search`, `search`, and
 so on). The template ports to each `stride` port's Step 5.5.
 
-### W2271 — a lighter Step 5.5 contract (planned)
+### W2271 — a lighter Step 5.5 contract (`stride` only; released in `stride` 1.84.0 (2026-10-04))
 
-**Planned change.** `stride`'s `optional-exploratory-testing.md` (47,699 B) and
-`manual-testing-findings.md` (21,286 B) move their history and rationale into
-docs, and keep every gate, enum and redaction rule inline.
+**What shipped.** `optional-exploratory-testing.md` went from 62,789 to
+46,080 bytes and `manual-testing-findings.md` from 21,875 to 16,967 (`wc -c`;
+both had grown since the 2026-10-02 figures). History and rationale moved to
+`stride`'s new `docs/exploratory-testing-rationale.md`, with a one-line `Why:`
+pointer at each source site. Every gate, enum and redaction rule stayed inline.
+Commit `8ab06ff` (`stride`).
 
 **Per edition.** Port the *method* to each `stride` port's own Step 5.5 text,
 which is voiced differently: find its rationale paragraphs, move them to that
 port's docs, and keep every rule inline. Do not copy `stride`'s trimmed bytes.
 
-### W2272 — trimmed descriptions and skills (planned)
+### W2272 — trimmed descriptions and skills (released in v0.4.0 (2026-10-04))
 
-**Planned change.**
-- Shorten the always-loaded agent and command descriptions, keeping their
-  triggering conditions.
-- Move the on-disk-artifacts section of `skills/session` and the worked-example
-  and tone section of `skills/bug-advocacy` into linked references.
+**What shipped.** The two agent descriptions drop their `<example>` blocks
+(explorer 1,831 → 635 B, charter-generator 1,628 → 603 B), and `/explore`,
+`/pair` and `/harden` drop mechanics that are not triggers. All description
+blocks went from 10,344 to 7,687 B, keeping every triggering condition and the
+explorer's safety statement. The session skill's on-disk artifacts section
+moved to `skills/session/references/session-artifacts.md`. The bug-advocacy
+worked example and tone section moved to
+`skills/bug-advocacy/references/worked-example-and-tone.md`. Each is linked from
+a stub that keeps the headings commands cite. Commit `4abdd14`.
 
 **Per edition.** Every variant has the same five skills plus the command entry
 points, so measure each edition's own sizes with `wc -c` before and after. In
