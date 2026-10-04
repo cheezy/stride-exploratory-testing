@@ -5,7 +5,8 @@
 # plugin's docs require: a valid manifest, all six skills, all seven
 # commands, both agents, the explorer card (its severity enum pinned to
 # bug-advocacy, no plugin-relative skill reads), the explorer's report-path
-# contract (Write only, bounded summary, inline fallback), the three README-referenced
+# contract (Write only, bounded summary, inline fallback), its verify mode
+# (one or two probes, pass/fail/not_verified, outside the card), the three README-referenced
 # fixtures, and the root docs. Pure shell + python3 (for JSON and the card)
 # — no network, no jq.
 #
@@ -209,6 +210,36 @@ if [ -f "$EXPLORER" ] && [ -f "$EXPLORE_CMD" ]; then
   fi
 else
   nope "report-path checks need agents/explorer.md and commands/explore.md" ""
+fi
+
+# --- Explorer verify mode ----------------------------------------------------
+#
+# W2268: EXPLORATORY_MODE=verify re-checks one fixed bug from its minimal_repro
+# in one or two probes and returns pass / fail / not_verified with evidence. It
+# lives outside the explorer card, which has almost no byte budget left.
+
+if [ -f "$EXPLORER" ]; then
+  for needle in 'EXPLORATORY_MODE=verify' '## Verify mode — re-checking a fixed bug' \
+      'Default **2 probes**; the band is **1–2**' 'never a larger probe budget' \
+      'Probe 1 executes the `minimal_repro` exactly' 'do not improvise one' \
+      '"result": "pass" | "fail" | "not_verified"' 'including a partial fix' \
+      '`not_verified` is never a pass' 'A verify pass covers that one bug only' \
+      'The smaller budget never relaxes the safety boundary' \
+      'a `verify: <result>` line follows `status:`' 'it is not a second shape'; do
+    if grep -qF -- "$needle" "$EXPLORER"; then
+      ok "explorer.md verify mode documents: ${needle}"
+    else
+      nope "explorer.md is missing verify-mode wording" "$needle"
+    fi
+  done
+  CARD_VERIFY=$(awk '/<!-- explorer-card:start -->/{f=1} f{print} /<!-- explorer-card:end -->/{f=0}' "$EXPLORER" | grep -ci 'verify')
+  if [ "$CARD_VERIFY" = "0" ]; then
+    ok "verify mode stays outside the explorer card"
+  else
+    nope "the explorer card must not carry verify-mode text" "$CARD_VERIFY matching line(s)"
+  fi
+else
+  nope "verify-mode checks need agents/explorer.md" ""
 fi
 
 # --- Fixtures (referenced by README.md) ------------------------------------
