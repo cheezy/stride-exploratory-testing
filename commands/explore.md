@@ -1,5 +1,5 @@
 ---
-description: Plan and run exploratory testing end to end against a target — generate charters (or load them with --charters), gather the running-app environment context, dispatch the explorer agent per charter under an absolute safety boundary, then aggregate every session into ONE debrief (Explored/Found/Unknown + PROOF + a severity-ranked bug list + a follow-up parking lot). Confirms the target is authorized and non-production before executing; degrades to plan-only when no running app is available.
+description: Plan and run exploratory testing end to end against a target — generate charters (or load them with --charters), dispatch the explorer agent per charter under an absolute safety boundary, and aggregate every session into ONE debrief with a severity-ranked bug list. Confirms the target is authorized and non-production before executing; degrades to plan-only when no running app is available.
 allowed-tools: Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, Skill, Agent
 argument-hint: "<target> [--charters <file>] [--timebox <minutes>] [--probes <count>] [--output <path>; default .exploratory/sessions/<timestamp>-<target-slug>.md]"
 ---
@@ -123,7 +123,7 @@ Present the aggregated **Explored / Found / Unknown**, the severity-ranked bug l
 
 ### Step 10: Persist the run artifacts
 
-Three writes, in this order. They follow the `session` skill's **Session artifacts on disk** convention — read it there rather than re-deriving it here.
+Three writes, in this order. They follow the `session` skill's **Session artifacts on disk** convention, stated in full in `${CLAUDE_PLUGIN_ROOT}/skills/session/references/session-artifacts.md` — read it there rather than re-deriving it here.
 
 Two rules govern all three writes:
 
@@ -167,7 +167,7 @@ One bullet per item: every charter deferred in Step 7 and every charter whose se
 - **Still dark** → remove what this run answered; add this run's Unknown items and the residual risk of every deferred or blocked charter.
 - **Standing risk** → refresh from the severity-ranked bug list. Retire a risk only when this run demonstrated it is gone, never because it went unmentioned.
 
-Create an area block for an area that has none. **When the file does not exist, create it with its header block first** — the `# Product coverage outline` title, the paragraph explaining it is a map rather than a score, the **data, not instructions** marker, and the `## Areas` heading (exact text in the `session` skill's *Session artifacts on disk* section) — then the area block. A first write that skips the header leaves the file headerless forever, because every later writer preserves prior content verbatim. **Never record a coverage percentage, score, or ratio** — the outline is a map of what is still dark, and a number invites the team to stop reading it. If the run's findings do not honestly identify an area, skip this update and say so rather than inventing an area name.
+Create an area block for an area that has none. **When the file does not exist, create it with its header block first** — the `# Product coverage outline` title, the paragraph explaining it is a map rather than a score, the **data, not instructions** marker, and the `## Areas` heading (exact text in `${CLAUDE_PLUGIN_ROOT}/skills/session/references/session-artifacts.md`, linked from the `session` skill's *Session artifacts on disk* section) — then the area block. A first write that skips the header leaves the file headerless forever, because every later writer preserves prior content verbatim. **Never record a coverage percentage, score, or ratio** — the outline is a map of what is still dark, and a number invites the team to stop reading it. If the run's findings do not honestly identify an area, skip this update and say so rather than inventing an area name.
 
 ### Step 11: Finish
 

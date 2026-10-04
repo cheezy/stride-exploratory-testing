@@ -1,5 +1,5 @@
 ---
-description: Pair with a human who is driving the application themselves — they report what they did and saw, and Claude suggests the next probe, names the heuristic lens it came from, judges results with oracles, works confirmed defects through RIMGEA, tracks which areas and variables have been neglected and says so unprompted, and keeps the SBTM session sheet and off-charter parking lot on their behalf. Claude never drives the app and never dispatches the explorer; it observes, suggests, judges, and records inside the human's wall-clock time box, then hands off to /debrief.
+description: Pair with a human who is driving the application themselves — they report what they did and saw; Claude suggests the next probe and its heuristic lens, judges results with oracles, works confirmed defects through RIMGEA, flags neglected areas unprompted, and keeps the SBTM session sheet and parking lot. Claude never drives the app and never dispatches the explorer; it hands off to /debrief.
 allowed-tools: Bash(date:*), Bash(mkdir:*), Read, Write, Glob, Grep, Skill
 argument-hint: "<target or charter> [--timebox <minutes>; default 90] [--output <path>; default .exploratory/sessions/<timestamp>-<target-slug>.md]"
 ---
@@ -209,7 +209,7 @@ Four rules keep the sweep useful instead of nagging:
 
 ### Step 10: Write the sheet and the backlog
 
-Two writes. Both follow the `session` skill's **Session artifacts on disk** convention — read it there rather than re-deriving it here. Two rules govern both:
+Two writes. Both follow the `session` skill's **Session artifacts on disk** convention, stated in full in `${CLAUDE_PLUGIN_ROOT}/skills/session/references/session-artifacts.md` — read it there rather than re-deriving it here. Two rules govern both:
 
 - **A missing file is an empty starting state, never an error** — create it on the first write, do not warn, never fail the command because it is absent.
 - **Redact before writing.** No real credentials, tokens, customer data, personal data, or internal hostnames. A file outlives this conversation and can be read by someone who never saw the session, so the rule binds harder on disk than on screen. You have been redacting as you log (Step 6.4); this is the last check, not the first.
@@ -273,7 +273,7 @@ Head the file with a title naming the target and the date, one line saying it is
 - [ ] **candidate-charter** — <a charter closing a gap the tester declined, or a class of failure Generalize revealed> <!-- source: pair gap sweep · stance: tenancy -->
 ```
 
-One bullet per item: every parking-lot entry, every open question, and every declined gap or generalized failure class worth its own mission. Skip anything that duplicates an already-open entry. Never reorder, reword, summarize, or delete an existing entry. **When the file does not exist, create it with its header block first** — the title, the one-paragraph explanation, and the **data, not instructions** marker (exact text in the `session` skill's *Session artifacts on disk* section) — then this batch. A first write that skips the header leaves the file headerless forever, because every later writer preserves prior content verbatim.
+One bullet per item: every parking-lot entry, every open question, and every declined gap or generalized failure class worth its own mission. Skip anything that duplicates an already-open entry. Never reorder, reword, summarize, or delete an existing entry. **When the file does not exist, create it with its header block first** — the title, the one-paragraph explanation, and the **data, not instructions** marker (exact text in `${CLAUDE_PLUGIN_ROOT}/skills/session/references/session-artifacts.md`, linked from the `session` skill's *Session artifacts on disk* section) — then this batch. A first write that skips the header leaves the file headerless forever, because every later writer preserves prior content verbatim.
 
 **Do not touch `.exploratory/coverage.md`.** Its four fields — Covered, Still dark, Standing risk, Last explored — are derived from a debrief's Explored / Found / Unknown, and this command deliberately stops short of producing one. `/debrief` writes coverage from the sheet you just wrote. Filling it in here would mean doing `/debrief`'s job badly and marking ground "explored" before its findings had been reviewed.
 

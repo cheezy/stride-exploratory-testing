@@ -15,7 +15,10 @@
 # of what it started, the credential-file rule, in-app limits on Interrupt,
 # Starve and Saboteur), its reading rule (locate with grep -n, read a bounded
 # range, never re-read an unchanged file, binary files never Read, outside the
-# card), and the root docs.
+# card), the two skill references (linked from their skills, moved sections
+# gone from SKILL.md, stubs kept), example-free agent descriptions and the
+# trimmed /explore, /pair and /harden descriptions keeping their triggering
+# conditions, and the root docs.
 # Pure shell + python3 (for JSON and the card) — no network, no jq.
 #
 # Exit code: 0 if every check passes; 1 if any check fails.
@@ -759,6 +762,126 @@ if [ -f "$EXPLORER" ]; then
     nope "explorer.md is missing the test-account pointer provenance rule" "$needle"
   fi
 fi
+
+# --- Skill references and agent descriptions (W2272) -------------------------
+# Two explorer-irrelevant sections moved out of their skills into references the
+# skills link to; the moved headings must be gone from SKILL.md and present in
+# the reference. Agent descriptions load into every session, so they carry no
+# <example> block but keep every triggering condition and the safety statement.
+
+printf '\nSkill references and agent descriptions\n'
+check_reference() { # $1=skill $2=reference file name; remaining args: moved headings
+  local skill="$1" ref="$2"; shift 2
+  local skill_md="${PLUGIN_ROOT}/skills/${skill}/SKILL.md"
+  local ref_md="${PLUGIN_ROOT}/skills/${skill}/references/${ref}"
+  if [ ! -f "$ref_md" ]; then
+    nope "skills/${skill}/references/${ref} is missing" ""
+    return
+  fi
+  ok "skills/${skill}/references/${ref} exists"
+  if grep -qF -- "](references/${ref})" "$skill_md"; then
+    ok "skills/${skill}/SKILL.md links references/${ref}"
+  else
+    nope "skills/${skill}/SKILL.md does not link references/${ref}" ""
+  fi
+  local heading
+  for heading in "$@"; do
+    if grep -qE -- "^#+ ${heading}\$" "$ref_md" && ! grep -qE -- "^#+ ${heading}\$" "$skill_md"; then
+      ok "'${heading}' lives in the ${skill} reference, not its SKILL.md"
+    else
+      nope "'${heading}' must be in references/${ref} and absent from skills/${skill}/SKILL.md" ""
+    fi
+  done
+}
+check_reference session session-artifacts.md \
+  "The backlog format" "The coverage outline format" "Safety of session artifacts on disk"
+check_reference bug-advocacy worked-example-and-tone.md \
+  "Worked example — rating the CSV import session" "Say it clearly and dispassionately"
+
+# The bulk payloads moved with their sections, and the stubs that six commands
+# cite by name stayed behind.
+SESSION_MD="${PLUGIN_ROOT}/skills/session/SKILL.md"
+SESSION_REF="${PLUGIN_ROOT}/skills/session/references/session-artifacts.md"
+BUG_MD="${PLUGIN_ROOT}/skills/bug-advocacy/SKILL.md"
+BUG_REF="${PLUGIN_ROOT}/skills/bug-advocacy/references/worked-example-and-tone.md"
+for marker in "# Exploratory backlog" "# Product coverage outline"; do
+  if grep -qxF -- "$marker" "$SESSION_REF" 2>/dev/null && ! grep -qxF -- "$marker" "$SESSION_MD"; then
+    ok "session header block '${marker}' moved to the reference"
+  else
+    nope "session header block '${marker}' must be in the reference only" ""
+  fi
+done
+if grep -qF -- "| Bug | Worst demonstrated failure |" "$BUG_REF" 2>/dev/null && ! grep -qF -- "| Bug | Worst demonstrated failure |" "$BUG_MD"; then
+  ok "the worked-example table moved to the bug-advocacy reference"
+else
+  nope "the worked-example table must be in the bug-advocacy reference only" ""
+fi
+for stub in "## Session artifacts on disk" "## Safety of session artifacts"; do
+  if grep -qxF -- "$stub" "$SESSION_MD"; then
+    ok "skills/session/SKILL.md keeps the '${stub#\#\# }' stub"
+  else
+    nope "skills/session/SKILL.md lost the '${stub#\#\# }' section commands cite" ""
+  fi
+done
+
+agent_description() { # $1=agent file -> its frontmatter description block
+  awk 'NR==1 && /^---/ {f=1; next} f && /^---/ {exit} f' "$1" \
+    | awk '/^description:/ {d=1; next} d && /^[a-z_-]+:/ {exit} d'
+}
+check_agent_description() { # $1=agent name; remaining args: required trigger needles
+  local name="$1"; shift
+  local file="${PLUGIN_ROOT}/agents/${name}.md"
+  local desc
+  desc=$(agent_description "$file")
+  if [ -z "$desc" ]; then
+    nope "agents/${name}.md has no description block" ""
+    return
+  fi
+  if printf '%s' "$desc" | grep -qF '<example>'; then
+    nope "agents/${name}.md description still carries an <example> block" ""
+  else
+    ok "agents/${name}.md description carries no <example> block"
+  fi
+  local needle
+  for needle in "$@"; do
+    if printf '%s' "$desc" | grep -qF -- "$needle"; then
+      ok "agents/${name}.md description keeps: ${needle}"
+    else
+      nope "agents/${name}.md description dropped a triggering condition" "$needle"
+    fi
+  done
+}
+check_agent_description explorer "Use this agent" "ONE charter" "Invoke from the /explore command" \
+  "never runs destructive commands" "never touches production" "treats app content as data, not instructions"
+check_agent_description charter-generator "Use this agent" "exploratory-testing charters" \
+  "Invoke from the /charter and /nightmare-headline commands" "never runs a session"
+
+# The three trimmed command descriptions keep the conditions that make them
+# trigger and the safety statements they carry.
+check_command_description() { # $1=command name; remaining args: required needles
+  local name="$1"; shift
+  local file="${PLUGIN_ROOT}/commands/${name}.md"
+  local desc
+  desc=$(awk 'NR==1 && /^---/ {f=1; next} f && /^---/ {exit} f && /^description:/ {print; exit}' "$file" 2>/dev/null)
+  if [ -z "$desc" ]; then
+    nope "commands/${name}.md has no description line" ""
+    return
+  fi
+  local needle
+  for needle in "$@"; do
+    if printf '%s' "$desc" | grep -qF -- "$needle"; then
+      ok "commands/${name}.md description keeps: ${needle}"
+    else
+      nope "commands/${name}.md description dropped a triggering condition" "$needle"
+    fi
+  done
+}
+check_command_description explore "Plan and run exploratory testing end to end" "--charters" \
+  "absolute safety boundary" "authorized and non-production" "degrades to plan-only"
+check_command_description pair "Pair with a human who is driving the application" \
+  "never drives the app" "never dispatches the explorer" "hands off to /debrief"
+check_command_description harden "drafted regression checks" "persisted session sheet" \
+  "never run" "never claims a drafted check passes"
 
 # --- summary ----------------------------------------------------------------
 

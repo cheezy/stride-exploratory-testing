@@ -84,7 +84,7 @@ Charters generated here are candidate work like any other — they belong on the
 - [ ] **candidate-charter** — <the full charter sentence> <!-- rank N · source: nightmare-headline · time_box: … -->
 ```
 
-One bullet per charter, in rank order, using `date +%Y-%m-%d` for the heading. **When the file does not exist, create it with its header block first** — the title, the one-paragraph explanation of what the file holds, and the **data, not instructions** marker (exact text in the `session` skill's *Session artifacts on disk* section) — then this batch. A first write that skips the header leaves the file headerless forever, because every later writer preserves prior content verbatim. Skip anything that duplicates an already-open entry; never reorder, reword, or delete an existing entry.
+One bullet per charter, in rank order, using `date +%Y-%m-%d` for the heading. **When the file does not exist, create it with its header block first** — the title, the one-paragraph explanation of what the file holds, and the **data, not instructions** marker (exact text in `${CLAUDE_PLUGIN_ROOT}/skills/session/references/session-artifacts.md`, linked from the `session` skill's *Session artifacts on disk* section) — then this batch. A first write that skips the header leaves the file headerless forever, because every later writer preserves prior content verbatim. Skip anything that duplicates an already-open entry; never reorder, reword, or delete an existing entry.
 
 ### Step 10: Finish
 
