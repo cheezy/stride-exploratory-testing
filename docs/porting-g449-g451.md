@@ -34,7 +34,7 @@ intent, not shipped behaviour. All of these tasks were *planned* on 2026-10-02.
 | W2270 | G451 | Ranged reads with no whole-file re-reads; a fixed Step 5.5 dispatch template | released in v0.4.0 and `stride` 1.84.0 (2026-10-04) |
 | W2271 | G451 | Trim `stride`'s Step 5.5 and findings contracts down to rules | `stride` only; released in `stride` 1.84.0 (2026-10-04) |
 | W2272 | G451 | Trim always-loaded descriptions and the sections of the session and bug-advocacy skills the explorer does not use | released in v0.4.0 (2026-10-04) |
-| W2273 | G451 | Measure before and after against the 2026-10-02 baseline | planned (claim last) |
+| W2273 | G451 | Measure before and after against the 2026-10-02 baseline | measured 2026-10-05; see [`measurement-2026-10.md`](measurement-2026-10.md) (docs only; unreleased) |
 
 ## The baseline
 
@@ -358,11 +358,27 @@ points, so measure each edition's own sizes with `wc -c` before and after. In
 copilot and codex, the command entry points are skills, so their descriptions
 are always loaded too. Trim those as well.
 
-### W2273 — measurement (planned; last)
+### W2273 — measurement (measured 2026-10-05; docs only)
 
-**Planned change.** Once the three goals are released and installed, measure at
-least three Step 5.5 sessions against the baseline above, naming the comparator
-for every figure.
+**What shipped.** [`measurement-2026-10.md`](measurement-2026-10.md) compares
+three Step 5.5 dispatches (plugin 0.4.0 + `stride` 1.84.0, 2026-10-05) with the
+19 baseline dispatches above. Each figure there names its comparator.
+`docs/scripts/measure-explorer-sessions.py` reproduces the baseline before it
+measures anything (`--baseline-check`). It re-derives 16 dispatches from
+transcripts and takes the 3 whose transcripts are gone from the vendored
+`docs/scripts/baseline-2026-10-02.json`.
+
+The results are mixed:
+
+- Median wall fell from 547 s to 263 s.
+- Returned bytes fell from a median of 37,314 to 525.
+- Dispatch prompts fell from a median of 6,824 B to 1,106 B.
+- **Input-side tokens per dispatch rose** from a median of 1.10M to 1.49M. There
+  were more requests, and a fixed base about 8.8k tokens larger, because
+  `explorer.md` grew from 18 KB to 49 KB.
+- The severity and repeat-read figures do not credit the changes, because the
+  sample is small and the after explorers made no `Read` calls.
+- Part of the speed-up comes from the charter kind and the model, not the plugin.
 
 **Per edition.** A variant's measurement needs that runtime's own transcripts.
 Do not claim a variant saving from the Claude Code numbers.

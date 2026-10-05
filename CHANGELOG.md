@@ -4,6 +4,20 @@ All notable changes to the `stride-exploratory-testing` plugin are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **A measured before-and-after of `stride` Step 5.5 explorer sessions, with a script that reproduces the 2026-10-02 baseline first** (W2273). `docs/measurement-2026-10.md` compares three dispatches (plugin 0.4.0 + `stride` 1.84.0, 2026-10-05, one session, all on a running app) with the 19 baseline dispatches (plugin 0.2.1, 2026-09-03 to 2026-10-02, 7 sessions). It names the comparator and session position for every figure. It says plainly where a metric did not improve:
+  - Median wall per dispatch fell from 547 s to 263 s.
+  - The median returned to the main loop fell from 37,314 B to 525 B; the full findings now sit in a file of about 14 KB.
+  - Dispatch prompts fell from a median of 6,824 B to 1,106 B.
+  - **Input-side tokens per dispatch rose** from a median of 1.10M to 1.49M. There were more requests, and a fixed base about 8.8k tokens larger, because `agents/explorer.md` grew from 18 KB to 49 KB.
+  - Output tokens are not comparable: the after transcripts record only stream-start usage.
+  - The severity and repeat-read figures do not credit the changes, because six bugs is too few and the after explorers made no `Read` calls.
+
+  A section on the task's manual test separates what the charter kind (HTTP `curl` against a local app, not markdown) and the model explain from what only the contract changes can produce. `docs/scripts/measure-explorer-sessions.py` is Python with the standard library only. It names every dispatch by id instead of globbing all explorer transcripts, and it lists the three later transcripts it excludes, with the reason for each. Its usage is deduplicated by `message.id`, and the last record's usage wins. `--self-test` covers dedupe, context arithmetic, report-share boundaries and repeat-read classification. `--baseline-check` reproduces every 2026-10-02 figure: from transcripts for 16 dispatches, and for the 3 whose transcripts are gone from `docs/scripts/baseline-2026-10-02.json`, which holds numbers, ids and enum values only, with severity strings stored as hashes. The 2026-10-02 review's "39%" report-writing share cannot be recomputed on 19 dispatches; its definition reproduces 38.2% on the 16 that remain. A comparable definition that works when the report is a `Write` gives 40.2% before and 21.5% after.
+
 ## [0.4.0] - 2026-10-04
 
 A checkable explorer contract, a structured safety boundary and lighter sessions. The explorer's output now has a published `stop_reason` → `status` table, `replicated` and `provisional` on every bug, and `contract_version` `"1.0"`. Authorization and allowed hosts are required lines, and the explorer cleans up what it started. HTTP is observed with `curl` and a new `no_observation_surface` ending covers what it cannot see. Verify mode re-checks one fixed bug, `/harden` runs unattended, files are read by range, and the always-loaded text is shorter.
