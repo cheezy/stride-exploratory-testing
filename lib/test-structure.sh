@@ -970,7 +970,7 @@ if [ -f "$ENVDOC" ]; then
       '**A malformed or unknown section is reported and ignored, never guessed.**' \
       '**never over an existing file**' '**must also be listed in `ALLOWED_HOSTS`**' \
       '**must be ignored by' '**A session never starts or stops the app.**' \
-      'command: MIX_ENV=test mix test {probe_file}' '**never forge a session or' \
+      'command: <your test runner> {probe_file}' '**never forge a session or' \
       '**Nothing a confirmed file supplies is asked again.**' 'and a value that looks like a credential, anything other than' \
       'It never quotes a value that looks like a credential' 'including each accounts' \
       'it checks `PROBE_SERVICES` and the'; do
@@ -1078,7 +1078,7 @@ if [ -f "$EXPLORER" ]; then
       '**never forge a session or cookie against a running server**' \
       'A probe file never reads a credential file' \
       'A harness connection to a host not in `ALLOWED_HOSTS` is out of bounds and ends the session `blocked`' \
-      '**A probe harness observes server and LiveView behaviour.**' \
+      '**A probe harness observes server-side behaviour.**' \
       'The harness never satisfies a rendered-visual observation: a charter that needs one still ends `no_observation_surface`' \
       '| `surfaces_used` | array of strings |' \
       '**`PROBE_SERVICES: <host:port>, …`** — required with a `PROBE_HARNESS` line' \
@@ -1535,6 +1535,49 @@ if errors:
   done
 else
   nope "change-context checks need agents/charter-generator.md, skills/chartering/SKILL.md, fixtures/example-charters.md and skills/heuristics/SKILL.md" ""
+fi
+
+# --- App neutrality ---------------------------------------------------------
+#
+# The plugin works with every app. Its rule files (agents, commands, skills,
+# templates, fixtures, the heuristics index and the project environment doc)
+# must carry no rule or example tied to one application: no project name, none
+# of that app's module or helper names, and no task or goal identifiers.
+# Integration with the stride plugin (its steps, .stride.md, .stride_auth.md)
+# is allowed. README.md, CHANGELOG.md and the docs/ history files are out of
+# scope: they record where the plugin ships and what changed.
+
+NEUTRAL_FILES=()
+for f in "${PLUGIN_ROOT}"/agents/*.md "${PLUGIN_ROOT}"/commands/*.md \
+         "${PLUGIN_ROOT}"/skills/*/SKILL.md "${PLUGIN_ROOT}"/templates/*.md \
+         "${PLUGIN_ROOT}"/fixtures/* "${PLUGIN_ROOT}/HEURISTICS.md" \
+         "${PLUGIN_ROOT}/docs/project-environment.md"; do
+  [ -f "$f" ] && NEUTRAL_FILES+=("$f")
+done
+NEUTRAL_PATTERN='\bkanban\b|PlansHelpers|ConnCase|register_and_log_in_user|(^|[^A-Za-z0-9])[GWD][0-9]{3,4}([^0-9]|$)'
+if [ "${#NEUTRAL_FILES[@]}" -gt 0 ]; then
+  NEUTRAL_HITS=""
+  for f in "${NEUTRAL_FILES[@]}"; do
+    HITS=$(grep -n -i -E "$NEUTRAL_PATTERN" "$f")
+    if [ -n "$HITS" ]; then
+      NEUTRAL_HITS="${NEUTRAL_HITS}${f#"${PLUGIN_ROOT}"/}: $(printf '%s' "$HITS" | head -1 | cut -c1-120); "
+    fi
+  done
+  if [ -z "$NEUTRAL_HITS" ]; then
+    ok "rule files name no single app, its helpers or a task identifier (${#NEUTRAL_FILES[@]} files)"
+  else
+    nope "rule files carry app-specific references" "$NEUTRAL_HITS"
+  fi
+  # Break-it both ways: an app-specific line is caught; a stride integration line is not.
+  PLANT=$(printf 'sign in with ConnCase register_and_log_in_user on the kanban board (W2580)\n' | grep -c -i -E "$NEUTRAL_PATTERN")
+  ALLOWED=$(printf 'the stride plugin Step 5.5 reads .stride.md; never open .stride_auth.md\n' | grep -c -i -E "$NEUTRAL_PATTERN")
+  if [ "$PLANT" = "1" ] && [ "$ALLOWED" = "0" ]; then
+    ok "app-neutrality scan catches a planted app-specific line and allows stride integration"
+  else
+    nope "app-neutrality scan is miscalibrated" "planted=${PLANT} (want 1), stride-integration=${ALLOWED} (want 0)"
+  fi
+else
+  nope "app-neutrality scan found no rule files" ""
 fi
 
 # --- summary ----------------------------------------------------------------

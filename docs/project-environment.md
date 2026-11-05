@@ -3,11 +3,13 @@
 `.exploratory.md` is a file at the root of **the project you are testing**. It tells
 the exploratory-testing entry points how to reach the running system, once, so you do
 not have to answer the same questions every session. The user writes it. `/explore`
-reads it in Step 3. Stride's Step 0 may read it, and so may `/recon` and `/pair` later.
+reads it in Step 3. The `stride` plugin's Step 0 reads it too when it dispatches the
+explorer, and so may `/recon` and `/pair` later.
 
-It is modelled on Stride's `.stride.md`. It is made of `## ` sections, and you may
-commit it. Like `.stride.md`, it is split from the secrets: credentials live in a
-gitignored secrets file, the way Stride keeps them in `.stride_auth.md`.
+It is made of `## ` sections, and because it holds no secrets you may commit it.
+Credentials stay out of it, in a gitignored secrets file such as `.env`. If you use
+the `stride` plugin, the split is the same one as `.stride.md` (committed hooks) and
+`.stride_auth.md` (gitignored token).
 **The file never holds a secret value.** It names an account by its fixture, or by the NAME of
 the key that holds its credential in a gitignored secrets file. It never holds the
 value itself.
@@ -126,32 +128,33 @@ Every entry point that reads the file follows these rules.
   user's explicit yes, **never over an existing file**, and never with a secret value
   in it.
 
-## Worked Phoenix example
+## Worked example
 
-For a Phoenix app such as the Stride kanban repo, served on `localhost:4000`, with
-its test database on `localhost:5432`:
+For a web app served on `localhost:8000`, with its test database on
+`localhost:5432` and a test suite that signs users in through fixtures:
 
 ```markdown
 ## authorization
 AUTHORIZED_NON_PRODUCTION: yes
-ALLOWED_HOSTS: localhost:4000, localhost:5432
+ALLOWED_HOSTS: localhost:8000, localhost:5432
 
 ## app
-base_url: http://localhost:4000
-health_check: GET /
-start: the developer runs mix phx.server in their own terminal
+base_url: http://localhost:8000
+health_check: GET /health
+start: the developer starts the dev server in their own terminal
 
 ## probe_harness
-command: MIX_ENV=test mix test {probe_file}
-helpers: ConnCase register_and_log_in_user, the test/support/fixtures modules, PlansHelpers.enforce_plans
+command: <your test runner> {probe_file}
+probe_dir: tests/.probes
+helpers: the sign-in fixture, the user and project factories
 services: localhost:5432
 
 ## accounts
-- owner: fixture register_and_log_in_user with a board the probe creates
-- editor: fixture, a second user added to that board with edit rights
+- owner: fixture, a signed-in user who owns a project the probe creates
+- editor: fixture, a second user added to that project with edit rights
 - read-only: fixture, a second user added without edit rights
-- non-member: fixture, a third user with no board access
-- org-admin: fixture, a user given the organization admin role
+- non-member: fixture, a third user with no access to the project
+- admin: seeded account, credential under key TEST_ADMIN_PASSWORD in .env
 
 ## observation
 - browser on the dev server, held by the main loop
@@ -159,12 +162,17 @@ services: localhost:5432
 
 ## constraints
 - never start or stop the dev server
-- never compile in the dev environment
 - never forge a session or cookie against a running server
 ```
 
-On Elixir 1.20, `mix test` runs a test file outside `test_paths`, so probe files can
-stay in the explorer's own `mktemp -d` directory and `probe_dir` is not needed here.
+The `command:` line is whatever runs one test file in your project, with the file
+replaced by `{probe_file}` — for example `pytest {probe_file}`,
+`npx vitest run {probe_file}`, `bundle exec rspec {probe_file}`,
+`go test {probe_file}` or `mix test {probe_file}`, plus any environment
+variable your suite needs to select its test configuration. Keep `probe_dir` only when
+your runner refuses a file outside its test tree, and make sure git ignores that
+directory; when the runner accepts a file from anywhere, leave `probe_dir` out and probe
+files stay in the explorer's own `mktemp -d` directory.
 
 ## What the explorer does with it
 
@@ -181,4 +189,4 @@ In short:
   harness's own test connection settings before the first run.
 - It signs in fixture users only inside the test environment, and it never forges a
   session against a running server.
-- What a harness observes is server and LiveView behaviour, never a rendered view.
+- What a harness observes is server-side behaviour, never a rendered view.
