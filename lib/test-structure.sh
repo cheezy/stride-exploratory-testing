@@ -22,7 +22,10 @@
 # under its General or Web sub-heading with an E.g. example and a
 # When-a-change trigger, the web-only three never under General, in-app and
 # authorized-only framing, no task-identifier leak, named in HEURISTICS.md),
-# the root docs, and the .exploratory.md project environment file
+# the oracles skill's Adapter Is Not the Wire and Two Decision Sites sections
+# (each with an example, the unknown-never-found and agree-in-every-state
+# rules, no new reach, no task-identifier leak) and their one-line card
+# entries, the root docs, and the .exploratory.md project environment file
 # (its format doc, a placeholders-only template, /explore Step 3 reading it
 # before asking and only once confirmed) with the explorer's optional
 # PROBE_HARNESS surface and contract 1.1's session_sheet.surfaces_used.
@@ -127,6 +130,9 @@ fi
 # The explorer has no Skill tool and runs in the project directory, so every
 # rule it applies must be inline. Pin the card's severity enum to the
 # bug-advocacy rubric, and refuse any skill read by a plugin-relative path.
+# The card is capped at 4352 bytes. The cap was 4096 until the wire and
+# decision-site oracle lines took the card from 3949 to 4305 bytes, 209 over
+# it, so it rose by 256. Keep new rules outside the card where they fit.
 
 EXPLORER="${PLUGIN_ROOT}/agents/explorer.md"
 ADVOCACY="${PLUGIN_ROOT}/skills/bug-advocacy/SKILL.md"
@@ -141,10 +147,10 @@ if [ -f "$EXPLORER" ] && [ -f "$ADVOCACY" ]; then
   fi
 
   CARD_BYTES=$(awk '/<!-- explorer-card:start -->/{f=1} f{print} /<!-- explorer-card:end -->/{f=0}' "$EXPLORER" | wc -c | tr -d ' ')
-  if [ "$CARD_BYTES" -gt 0 ] && [ "$CARD_BYTES" -le 4096 ]; then
-    ok "explorer card is ${CARD_BYTES} bytes (limit 4096)"
+  if [ "$CARD_BYTES" -gt 0 ] && [ "$CARD_BYTES" -le 4352 ]; then
+    ok "explorer card is ${CARD_BYTES} bytes (limit 4352)"
   else
-    nope "explorer card must be 1-4096 bytes" "measured ${CARD_BYTES} bytes"
+    nope "explorer card must be 1-4352 bytes" "measured ${CARD_BYTES} bytes"
   fi
 
   if ENUM_OUT=$(python3 -c '
@@ -1222,6 +1228,90 @@ if [ -f "$HEUR" ] && [ -f "$HEUR_PAGE" ]; then
   done
 else
   nope "change-risk lens checks need skills/heuristics/SKILL.md and HEURISTICS.md" ""
+fi
+
+# --- Wire and decision-site oracles -----------------------------------------
+#
+# Two named oracles: Adapter Is Not the Wire (an in-process test adapter
+# cannot establish wire behaviour, so an unconfirmed wire claim goes under
+# debrief.unknown, never found) and Two Decision Sites (client and server
+# deciding the same thing must agree in every state). Each is a section of
+# the oracles skill with an example, and a one-line rule on the explorer card,
+# which must stay complete without the skill.
+
+ORACLES="${PLUGIN_ROOT}/skills/oracles/SKILL.md"
+
+oracle_section() {
+  awk -v h="## $2" '$0 == h {f=1; next} f && /^## /{f=0} f{print}' "$1"
+}
+
+if [ -f "$ORACLES" ] && [ -f "$EXPLORER" ]; then
+  CARD_TEXT=$(awk '/<!-- explorer-card:start -->/{f=1} f{print} /<!-- explorer-card:end -->/{f=0}' "$EXPLORER")
+  for name in 'Adapter Is Not the Wire' 'Two Decision Sites'; do
+    HEADS=$(grep -cxF -- "## ${name}" "$ORACLES")
+    if [ "$HEADS" = "1" ]; then
+      ok "oracles skill defines ${name}"
+    else
+      nope "oracles skill needs exactly one ## ${name} section" "found ${HEADS}"
+    fi
+    if oracle_section "$ORACLES" "$name" | grep -q '^\*Example:\*'; then
+      ok "oracles skill gives ${name} an example"
+    else
+      nope "oracles skill section has no *Example:* paragraph" "$name"
+    fi
+    CARD_LINES=$(printf '%s\n' "$CARD_TEXT" | grep -cF -- "**${name}.**")
+    if [ "$CARD_LINES" = "1" ]; then
+      ok "explorer card names ${name} in one line"
+    else
+      nope "explorer card needs exactly one **${name}.** line" "found ${CARD_LINES}"
+    fi
+  done
+  WIRE_SKILL=$(oracle_section "$ORACLES" 'Adapter Is Not the Wire')
+  for needle in 'in-process test adapter' 'streamed or chunked' '`HEAD`' 'connection aborts' \
+      '`Content-Length`' 'real server' '`debrief.unknown`, never under `found`' \
+      'grants no new reach' 'does not fire'; do
+    if printf '%s\n' "$WIRE_SKILL" | grep -qF -- "$needle"; then
+      ok "Adapter Is Not the Wire says: ${needle}"
+    else
+      nope "Adapter Is Not the Wire is missing required wording" "$needle"
+    fi
+  done
+  WIRE_CARD=$(printf '%s\n' "$CARD_TEXT" | grep -F -- '**Adapter Is Not the Wire.**')
+  for needle in 'in-process test adapter' '`HEAD`' '`Content-Length`' 'real server' \
+      '`debrief.unknown`, never `found`'; do
+    if printf '%s\n' "$WIRE_CARD" | grep -qF -- "$needle"; then
+      ok "card wire line says: ${needle}"
+    else
+      nope "card wire line is missing required wording" "$needle"
+    fi
+  done
+  SITES_SKILL=$(oracle_section "$ORACLES" 'Two Decision Sites')
+  for needle in 'agree in every state' 'A disagreement is a finding' 'Acceptable' 'Defect'; do
+    if printf '%s\n' "$SITES_SKILL" | grep -qF -- "$needle"; then
+      ok "Two Decision Sites says: ${needle}"
+    else
+      nope "Two Decision Sites is missing required wording" "$needle"
+    fi
+  done
+  if printf '%s\n' "$CARD_TEXT" | grep -F -- '**Two Decision Sites.**' | grep -qF -- 'agree in every state; a disagreement is a finding'; then
+    ok "card decision-sites line says both sites must agree in every state"
+  else
+    nope "card decision-sites line is missing its rule" "agree in every state; a disagreement is a finding"
+  fi
+  if grep -qF -- '*Adapter Is Not the Wire* grants no new reach' "$ORACLES"; then
+    ok "oracles safety section keeps wire confirmation inside the authorized target"
+  else
+    nope "oracles safety section is missing the no-new-reach sentence" ""
+  fi
+  LEAKS=$(grep -cE '(^|[^A-Za-z0-9])[GWD][0-9]{3,}([^0-9]|$)' "$ORACLES")
+  PROJECT=$(grep -ci 'kanban' "$ORACLES")
+  if [ "$LEAKS" = "0" ] && [ "$PROJECT" = "0" ]; then
+    ok "skills/oracles/SKILL.md names no task identifier or project module"
+  else
+    nope "skills/oracles/SKILL.md leaks a task identifier or project name" "identifier lines: ${LEAKS}, project lines: ${PROJECT}"
+  fi
+else
+  nope "wire and decision-site oracle checks need skills/oracles/SKILL.md and agents/explorer.md" ""
 fi
 
 # --- summary ----------------------------------------------------------------
