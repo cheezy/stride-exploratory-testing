@@ -13,8 +13,8 @@ Heuristics are the engine that turns a charter into concrete experiments. A heur
 ## How to use this catalog
 
 1. Start from the charter's target and the information you're chasing.
-2. Scan the **General Heuristics** for lenses that fit the target.
-3. If it's a web/HTTP surface, add the **Web Heuristics**.
+2. Scan the **General Heuristics** for lenses that fit the target; when the charter follows a change (a diff, a feature, a fix), start with its **change-risk lenses**, whose *When it applies* cell names the kind of change that calls for each.
+3. If it's a web/HTTP surface, add the **Web Heuristics**, including its change-risk lenses.
 4. Use the **Variable Catalog** to decide *what to vary* within a chosen lens.
 5. Use the **Tours** when you want a themed walkthrough of a whole area rather than a single probe.
 
@@ -44,6 +44,22 @@ Two working rules:
 | **Back, Forward, History** | Navigate backward and forward, replay history, resubmit a prior step. |
 | **Bookmark It** | Capture a deep state (a saved link, a mid-flow token) and return to it later, out of order, or from a fresh session. |
 
+### General change-risk lenses
+
+Pick these by the kind of change under test: each row's *When it applies* names the change that calls for it. They refine lenses above — **Pull the Rug** is an Interrupt-style lens and shares its in-app limits (see *Safety of security-flavored heuristics*), **Developer Guidebook** extends the **Guidebook Tour**, **Every Locale** sharpens **Change the Model** and the Geography / locale variable, and **Who Else Is Watching** generalizes **Multiple Tabs / Windows**.
+
+| Heuristic | What to try | When it applies |
+|---|---|---|
+| **Change the Rights** | Downgrade, restore or remove the user's role, membership or plan from a second session while their view stays open, then act in that view: every control, count and save must honour the new rights, not those loaded when the page opened. E.g. remove a test member from a shared workspace you created, then edit an item from the member's still-open view. | When a change touches roles, membership, plans, quotas or anything else that gates what a user may do. |
+| **Shadow Decision** | List every place the client re-decides what the server decides — an enabled or hidden control, a "remaining" count, a detected file type, a plan badge — and make the two disagree; the server's answer is the truth and the client must follow it. E.g. fill a quota to one below its limit from another session, then use the still-enabled add button twice. | When a change adds, moves or duplicates a rule the server enforces and the client also displays or pre-checks. |
+| **Who Else Is Watching** | For each mutation, list every open view that shows the changed data — other tabs, other users, lists, counters, badges, notifications — and check each refreshes, or is plainly marked stale, without a reload. E.g. rename a record in one session and watch its title in a second user's list, detail view and breadcrumb. | When a change adds or alters a create, update or delete, or a real-time broadcast. |
+| **Pull the Rug** | By in-app means only, on test data you created, delete, archive or move the parent of a view that is still open — the folder of an open document, the project of an open task — then act in the child view: save, navigate, refresh. E.g. from a second tab, delete a folder you created while a document inside it is open for editing, then save the document. | When a change adds or alters a child view, a nested route, or a delete or move of a parent entity. |
+| **Every Surface** | Enumerate every place that renders or edits the entity — each route, page, template, modal, list, archive or history view, alternate edit route, export, email, API response and CLI output — and check the change reached each one. E.g. after adding a field to a record's edit form, look for it on the archived-record view and in the bulk-edit dialog. | When a change alters how an entity is displayed, validated or edited. |
+| **Every Locale** | Read each new or changed string in every shipped locale: plural forms, formal or informal register, number, date and size formats, text that grows past its space, and CJK punctuation where fragments are joined. E.g. in each shipped language, view "1 file", "2 files" and a size such as 1.5 MB. | When a change adds or edits user-visible text, a message built from fragments, or a formatted number, date or size. |
+| **Developer Guidebook** | Extend the **Guidebook Tour** to developer-facing documents — module docs, design docs, the README and the changelog: each claim they make about the change is a probe, and each gap between claim and behaviour is a finding. E.g. a changelog line says deleting a list archives its items; delete a list you created and look for its items in the archive. | When a change ships with, or should have shipped with, module docs, a design doc or a changelog entry. |
+| **Leave No Trace** | After the feature, or its test suite, has run, look for residue it left behind in places you are permitted to read — temp files, uploads, generated reports, cache or lock files, leftover jobs — and record it rather than deleting it. E.g. run an export once, then list the app's temp and upload directories for files that outlived it. | When a change writes files, starts background jobs, or adds tests that create disk state. |
+| **Telemetry Semantics** | For each event, metric or log line the change emits, check that it fires exactly when its name says, once, with the documented fields and units — not on a failed attempt, a retry or a reload. E.g. an order-completed event should not fire when payment fails or when the confirmation page is reloaded. | When a change adds or alters telemetry, metrics, audit logs or analytics events. |
+
 ## Web Heuristics
 
 Apply these when the target is a web/HTTP surface. (Skip for non-web targets.)
@@ -59,6 +75,16 @@ Apply these when the target is a web/HTTP surface. (Skip for non-web targets.)
 | **Special Characters & Injection** | Unicode, emoji, RTL marks, long strings, and HTML/script/SQL metacharacters in inputs — observe how they're escaped, encoded, or stored. Framed for **authorized testing of your own system only**; keep payloads illustrative and non-destructive. |
 | **Copy / Paste / Autocomplete** | Paste rich or multi-line text, browser autofill, and values with leading/trailing whitespace. |
 | **Resize / Zoom / Responsive** | Narrow viewport, high browser zoom, orientation change — layout, focus order, and hidden-control bugs. |
+
+### Web change-risk lenses
+
+Chosen the same way, for web/HTTP targets only. **After the Headers** is an Interrupt-style lens and shares its in-app limits; **Other Verbs** extends **Tamper the URL** from the path to the method and headers.
+
+| Heuristic | What to try | When it applies |
+|---|---|---|
+| **Other Verbs** | Send the route ordinary requests with other methods and headers — HEAD, OPTIONS, a Range header, a conditional If-None-Match or If-Modified-Since — and check that status, headers and body agree with GET. Framed for **authorized testing of your own system only**. E.g. a HEAD on a new download route should return GET's headers with no body, and a Range request either a correct 206 or a plain 200. | When a change adds or alters a route, a download, or a cached or streamed response. |
+| **After the Headers** | By in-app means only, fail the source of a streamed response after its status and headers are committed: change or delete the disposable test record or file it is streaming through the app's own UI or API, or cancel the job that feeds it. Observe it on a **real server** with a client that shows the raw response — an in-process test adapter buffers the response and cannot see that window. E.g. start a large export of test data you created, delete its source from another session mid-stream, and see whether the client receives a truncated file under a 200. | When a change adds or alters a streamed, chunked or long-running response. |
+| **Response Hardening** | Check the security headers on every response type the change can produce — HTML, JSON, downloads, redirects, error pages, not-found pages — not only the main page: content security policy, framing, content-type sniffing, caching of private data, cookie flags. Framed for **authorized testing of your own system only**: send ordinary requests and read the headers. E.g. compare a new download's headers with a normal page's, looking for a private file served with a public cache header. | When a change adds a route, a response type, a file download or an error path. |
 
 ## Variable Catalog
 
@@ -119,6 +145,8 @@ A **Tour** is a themed walkthrough of an area, biased toward one kind of risk �
 The injection and Saboteur-style lenses are for **authorized testing of a system you own or are permitted to test** — never for attacking third parties. Keep example payloads clearly illustrative and non-destructive; this catalog contains no live exploit code targeting external systems, and neither should the probes you derive from it.
 
 **Interrupt, Starve and the Saboteur Tour are limited to in-app means**: cancel through the UI or API, close the tab, log off, let a request time out, throttle through an app setting or feature flag you are permitted to change in the environment you were given (never shared state, and restored afterwards), or exhaust an app-level quota with disposable test data. Never kill a process you did not start, never change operating-system, network or other system resources, and never touch a host outside the authorized target.
+
+**Pull the Rug and After the Headers share the Interrupt limits**: pull the rug or fail a streamed source only through the app's own UI or API, on test data you created. Never kill the server or a process you did not start, never drop or slow the network, and never touch another host. **Other Verbs and Response Hardening** are for authorized testing of your own system only: send ordinary requests to the authorized target and read what comes back — no scanners, no floods, no other host.
 
 ## Handing off
 
