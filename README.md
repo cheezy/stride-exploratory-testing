@@ -128,7 +128,9 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
   `no_observation_surface`. Its output carries `contract_version`, a `status` derived
   from `stop_reason`, and `replicated` / `provisional` on every bug. With
   `EXPLORATORY_MODE=verify` it re-checks one fixed bug from its minimal repro in one or
-  two probes.
+  two probes. Given an optional `PROBE_HARNESS:` line, it runs scratch probe files under
+  the project's own test framework, signing in fixture users with several roles, and
+  records which surfaces it used in `session_sheet.surfaces_used` (contract `1.1`).
 
 **`fixtures/`** — worked examples of the full flow: an
 [example charter set](fixtures/example-charters.md), an
@@ -138,6 +140,14 @@ The end-to-end flow is **Charter → Recon → Explore → Note → Debrief.**
 findings JSON, which `lib/test-structure.sh` checks against the output contract in
 `agents/explorer.md`. They double as concrete templates
 and as regression anchors for future smoke tests.
+
+**`templates/`** — [a commented `.exploratory.md` template](templates/exploratory.md),
+placeholders only. Copy it to the root of the project you test as `.exploratory.md`
+to say once how sessions reach the running system: the authorization lines, the
+app's address, the probe-harness command, the account roles, the observation tools
+and the project's constraints. It holds no secret values. `/explore` reads it in Step
+3 and uses it only after you confirm it for that session. The format and the reading
+rules are in [docs/project-environment.md](docs/project-environment.md).
 
 See also **[HEURISTICS.md](HEURISTICS.md)** for a one-page pointer to the lenses in
 the `heuristics` skill.
@@ -233,6 +243,11 @@ never this plugin's own repo:
 - **`/charter` reads both back** and hands a digest to the `charter-generator` agent,
   so run five proposes different charters than run one instead of re-suggesting
   ground you already covered.
+- **`.exploratory.md` is yours, not a session artifact.** It sits at the project root
+  beside the `.exploratory/` directory, you write it from
+  [the template](templates/exploratory.md), and no command writes it unless `/explore`
+  offers to save your answers when none exists and you say yes. It is never
+  overwritten.
 
 **A first run creates the tree.** No command fails, warns, or asks you to set
 anything up because `.exploratory/` doesn't exist yet — a missing file is an empty
