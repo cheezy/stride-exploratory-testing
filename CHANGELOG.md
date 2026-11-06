@@ -6,9 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-06
+
+A documentation and test release. Nothing an agent, skill or command does has changed since 0.5.0. It adds the guide the other editions port G503 from, and a structure check that keeps every docs link working.
+
 ### Added
 
-- **A porting guide for G503, and a check that every docs link resolves** (W2647). `docs/porting-g503.md` records what v0.5.0 and `stride` 1.87.0 shipped for G503, so the gemini, opencode, copilot and codex editions port from the released behaviour rather than from the task text. It has a status table with each commit and release, the editions as checked on 2026-11-06, a *What shipped* and *Per edition* section for each plugin-side task, the `stride`-side tasks, the W2588 replay and what it does not license a port to claim, the strings every edition keeps identical, and how each edition releases. `docs/porting-g449-g451.md` now points at it, because its own editions table is out of date. `lib/test-structure.sh` gains a *Docs relative links* section: every relative link in `docs/*.md` must resolve inside the plugin, and a planted missing link and a planted link that leaves the plugin must both be caught.
+- **A porting guide for G503, and a check that every docs link resolves** (W2647). `docs/porting-g503.md` records what v0.5.0 and `stride` 1.87.0 shipped for G503, so the gemini, opencode, copilot and codex editions port from the released behaviour rather than from the task text. It has a status table with each commit and release, the editions as checked on 2026-11-06, a *What shipped* and *Per edition* section for each plugin-side task, the `stride`-side tasks, the W2588 replay and what it does not license a port to claim, the strings every edition keeps identical, and how each edition releases. `docs/porting-g449-g451.md` now points at it, because its own editions table is out of date. The guide also records each port as it ships; the opencode edition was the first, in `stride-opencode-exploratory-testing` v0.5.0. `lib/test-structure.sh` gains a *Docs relative links* section: every relative link in `docs/*.md` must resolve inside the plugin, and a planted missing link and a planted link that leaves the plugin must both be caught.
 
 ## [0.5.0] - 2026-11-05
 

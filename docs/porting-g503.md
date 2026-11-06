@@ -17,6 +17,11 @@ The four port goals (gemini, opencode, copilot, codex) were filed before any of
 G503 had landed. This guide records what actually shipped, so that each port
 copies the released behaviour rather than the G503 task text.
 
+**Ports shipped so far:** opencode, in `stride-opencode-exploratory-testing`
+v0.5.0 (2026-11-06). The editions tables below still show every edition as it
+was checked before its port, so read opencode's current state from its own
+repository.
+
 **Port from landed sections only.** Every section below describes shipped
 behaviour at this repository's commit `88e47cc` (the v0.5.0 release). That
 includes `d560bd0`, which rewrote parts of W2580 after it landed, so port from
