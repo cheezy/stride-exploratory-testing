@@ -18,6 +18,10 @@ to *landed* and replace its "Planned change" paragraph with what actually
 shipped, including the commit and the release. A planned section describes
 intent, not shipped behaviour. All of these tasks were *planned* on 2026-10-02.
 
+The editions table below is as checked on 2026-10-02, and many of its cells
+have changed since. For G503, and for the editions as checked on 2026-11-06, see
+[`porting-g503.md`](porting-g503.md).
+
 ## Status
 
 | Task | Goal | Fix | Status |

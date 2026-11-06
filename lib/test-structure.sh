@@ -34,7 +34,7 @@
 # edge_cases_covered fields, lens triggers left to the heuristics catalog, an
 # unchanged no-change-context example), the chartering skill's change section
 # and the fixture's worked change-context example checked against that
-# contract.
+# contract, and every relative link in docs/*.md resolving inside the plugin.
 # Pure shell + python3 (for JSON and the card) — no network, no jq.
 #
 # Exit code: 0 if every check passes; 1 if any check fails.
@@ -1579,6 +1579,69 @@ if [ "${#NEUTRAL_FILES[@]}" -gt 0 ]; then
 else
   nope "app-neutrality scan found no rule files" ""
 fi
+
+# --- Docs relative links ----------------------------------------------------
+#
+# Every relative Markdown link in docs/*.md (the porting guides, the
+# measurement and the project environment doc) must resolve to a file or
+# directory inside the plugin. Links in fenced code blocks and inline code
+# spans are ignored; absolute URLs, mailto: and same-page #anchors are skipped.
+# A planted missing link and a planted link that leaves the plugin must both be
+# caught, so the check cannot pass vacuously.
+
+DOCS_LINKS_OUT=$(python3 - "$PLUGIN_ROOT" <<'PY'
+import glob, os, re, sys
+
+root = os.path.realpath(sys.argv[1])
+FENCE = re.compile(r"^(`{3,}|~{3,}).*?^\1[ \t]*$", re.S | re.M)
+CODE = re.compile(r"`[^`\n]*`")
+LINK = re.compile(r"\]\(([^)\s]+)\)")
+SKIP = re.compile(r"^(https?:|mailto:|#)")
+
+def bad_links(text, base):
+    text = CODE.sub("", FENCE.sub("", text))
+    bad, count = [], 0
+    for m in LINK.finditer(text):
+        link = m.group(1)
+        if SKIP.match(link):
+            continue
+        count += 1
+        target = os.path.realpath(os.path.join(base, link.split("#")[0]))
+        if not (os.path.exists(target) and (target + os.sep).startswith(root + os.sep)):
+            bad.append(link)
+    return count, bad
+
+files = sorted(glob.glob(os.path.join(root, "docs", "*.md")))
+total, problems = 0, []
+for f in files:
+    count, bad = bad_links(open(f, encoding="utf-8").read(), os.path.dirname(f))
+    total += count
+    problems += ["%s -> %s" % (os.path.relpath(f, root), b) for b in bad]
+if not files:
+    print("NOPE\tno docs/*.md files found\t")
+elif problems:
+    print("NOPE\tdocs/ relative links do not resolve inside the plugin\t" + "; ".join(problems))
+else:
+    print("OK\tevery relative link in docs/*.md resolves inside the plugin (%d links, %d files)\t" % (total, len(files)))
+
+docs = os.path.join(root, "docs")
+_, planted = bad_links("[a](no-such-file.md) [b](../../outside.md) `[c](ignored.md)` [d](https://example.invalid/x)", docs)
+if planted == ["no-such-file.md", "../../outside.md"]:
+    print("OK\tdocs link check catches a planted missing link and a link outside the plugin\t")
+else:
+    print("NOPE\tdocs link check is miscalibrated\tplanted bad links reported: %r" % planted)
+PY
+)
+case "$DOCS_LINKS_OUT" in
+  OK*|NOPE*)
+    while IFS=$'\t' read -r verdict label detail; do
+      case "$verdict" in
+        OK) ok "$label" ;;
+        NOPE) nope "$label" "$detail" ;;
+      esac
+    done <<< "$DOCS_LINKS_OUT" ;;
+  *) nope "docs link check produced no result" "python3 printed nothing parsable" ;;
+esac
 
 # --- summary ----------------------------------------------------------------
 

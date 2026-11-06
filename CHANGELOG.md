@@ -4,6 +4,12 @@ All notable changes to the `stride-exploratory-testing` plugin are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **A porting guide for G503, and a check that every docs link resolves** (W2647). `docs/porting-g503.md` records what v0.5.0 and `stride` 1.87.0 shipped for G503, so the gemini, opencode, copilot and codex editions port from the released behaviour rather than from the task text. It has a status table with each commit and release, the editions as checked on 2026-11-06, a *What shipped* and *Per edition* section for each plugin-side task, the `stride`-side tasks, the W2588 replay and what it does not license a port to claim, the strings every edition keeps identical, and how each edition releases. `docs/porting-g449-g451.md` now points at it, because its own editions table is out of date. `lib/test-structure.sh` gains a *Docs relative links* section: every relative link in `docs/*.md` must resolve inside the plugin, and a planted missing link and a planted link that leaves the plugin must both be caught.
+
 ## [0.5.0] - 2026-11-05
 
 The explorer can reach a members-only feature signed in, and chartering starts from the change. You declare once, in a `.exploratory.md` at your project root, how sessions reach the running system. The explorer gains an optional probe harness: scratch probe files run under your own test framework, with fixture users in several roles. Its output contract is `1.1` and adds `session_sheet.surfaces_used`. The charter-generator gets a change mode, the heuristics catalog gets twelve change-risk lenses, and the oracles skill gets two new oracles. The rules and examples work with every app. Pairs with `stride` 1.87.0, whose Step 0 reads the same file and whose Step 5.5 sends the harness lines; an older consumer reads a 1.1 report unchanged.
